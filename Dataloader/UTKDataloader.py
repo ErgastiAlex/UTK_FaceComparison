@@ -10,7 +10,7 @@ import re
 
 
 class UTKDataloader(Dataset):
-    def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1, data_size:int =1000):
+    def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1, data_size:int = 1000, exclude_images=[]):
         """
         Args:
             root_dir (string): Directory with all the images.
@@ -65,18 +65,19 @@ class UTKDataloader(Dataset):
         """
         Select @data_size images randomly from the directory
         """
+        self.files=list(filter(lambda x: x not in self.exclude_images, self.files))
         self.files=random.sample(self.files, self.data_size)
 
 
     def __create_dataset(self):
-        images=map(lambda x: (x,re.search("(\d+)_\d_\d_\d+\.jpg.*",x)), self.files)
+        self.images=map(lambda x: (x,re.search("(\d+)_\d_\d_\d+\.jpg.*",x)), self.files)
 
         #remove all non-matching images, just in case!
-        images=filter(lambda x: x[1]!=None, images)
-        images=map(lambda x: (x[0],x[1].group(1)), images)
+        self.images=filter(lambda x: x[1]!=None, self.images)
+        self.images=map(lambda x: (x[0],x[1].group(1)), self.images)
 
         # Create all possible combinations of images
-        image_combinations = permutations(images, 2)
+        image_combinations = permutations(self.images, 2)
         
         # Filter out images with age difference less than year_diff
         image_combinations=filter(lambda x: abs(int(x[0][1]) - int(x[1][1])) >= self.year_diff, image_combinations)
@@ -112,7 +113,8 @@ class UTKDataloader(Dataset):
             img = img.convert('RGB')
         return img
 
-
+    def get_images(self):
+        return self.images
 
 
 def main():
