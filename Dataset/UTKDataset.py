@@ -75,7 +75,9 @@ class UTKDataset(Dataset):
 
         #remove all non-matching images, just in case!
         self.images=filter(lambda x: x[1]!=None, self.images)
-        self.images=map(lambda x: (x[0],x[1].group(1)), self.images)
+
+        #This must be a list, otherwise DataLoader will not work
+        self.images=list(map(lambda x: (x[0],x[1].group(1)), self.images))
 
         # Create all possible combinations of images
         image_combinations = permutations(self.images, 2)
