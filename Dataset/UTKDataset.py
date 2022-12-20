@@ -9,7 +9,7 @@ from PIL import Image
 import re
 
 
-class UTKDataloader(Dataset):
+class UTKDataset(Dataset):
     def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1, data_size:int = 1000, exclude_images=[]):
         """
         Args:
