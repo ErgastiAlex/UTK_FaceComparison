@@ -27,6 +27,7 @@ class UTKDataset(Dataset):
         self.year_diff = year_diff
 
         self.__get_all_images_in_dir(root_dir)
+        self.exclude_images=exclude_images
         
         if data_size<=0:
             raise Exception("Data size must be greater than 0")
