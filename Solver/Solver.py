@@ -16,7 +16,7 @@ class Solver():
         self.model.to(self.device)
 
 
-        if args.load_model:
+        if args.resume_train:
             self.load_model()
 
 
@@ -25,7 +25,7 @@ class Solver():
         elif args.criterion == "MSELoss":
             self.criterion = torch.nn.MSELoss()
 
-        if args.optimizer == "Adam":
+        if args.opt == "Adam":
             #TODO add weight decay
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=args.lr)
         elif args.optimizer == "SGD":
@@ -70,7 +70,7 @@ class Solver():
     def train(self):
         for epoch in range(self.epochs):
             self.model.train()
-            
+
             for i, (x, y) in enumerate(self.train_loader):
                 x = x.to(self.device)
                 y = y.to(self.device)

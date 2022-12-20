@@ -94,8 +94,8 @@ class UTKDataset(Dataset):
 
     
     def __getitem__(self, idx):
-        img0 = UTKDataloader.__load_image(self.data[idx][0][0])
-        img1 = UTKDataloader.__load_image(self.data[idx][0][1])
+        img0 = UTKDataset.__load_image(self.data[idx][0][0])
+        img1 = UTKDataset.__load_image(self.data[idx][0][1])
 
         if self.transform:
             img0 = self.transform(img0)
@@ -122,7 +122,7 @@ def main():
     import matplotlib.pyplot as plt
     import os
 
-    dataloader=UTKDataloader(root_dir=os.getcwd()+"\\UTKFace", year_diff=1)
+    dataloader=UTKDataset(root_dir=os.getcwd()+"\\UTKFace", year_diff=1)
     
 
     # Visualize the data
