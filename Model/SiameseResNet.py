@@ -1,7 +1,7 @@
 from torchvision import models
 import torch
 
-class DoubleResNet(torch.nn.Module):
+class SiameseResNet(torch.nn.Module):
     def __init__(self,hidden_layer_dim=100):
         super().__init__() 
 
