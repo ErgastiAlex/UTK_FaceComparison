@@ -6,6 +6,7 @@ import glob
 from itertools import permutations 
 import random
 from PIL import Image
+import re
 
 
 class UTKDataloader(Dataset):
@@ -68,7 +69,11 @@ class UTKDataloader(Dataset):
 
 
     def __create_dataset(self):
-        images=map(lambda x: (x,x.split("/")[-1].split("_")[0]), self.files)
+        images=map(lambda x: (x,re.search("(\d+)_\d_\d_\d+\.jpg.*",x)), self.files)
+
+        #remove all non-matching images, just in case!
+        images=filter(lambda x: x[1]!=None, images)
+        images=map(lambda x: (x[0],x[1].group(1)), images)
 
         # Create all possible combinations of images
         image_combinations = permutations(images, 2)
@@ -98,7 +103,8 @@ class UTKDataloader(Dataset):
             img0=toTensor(img0)
             img1=toTensor(img1)
 
-        return (img0,img1), self.data[idx][1]
+        return torch.stack((img0,img1),0), self.data[idx][1]
+        
 
     def __load_image(img_name):
         with open(img_name, 'rb') as f:
@@ -111,8 +117,9 @@ class UTKDataloader(Dataset):
 
 def main():
     import matplotlib.pyplot as plt
+    import os
 
-    dataloader=UTKDataloader(root_dir="/media/ergale/SSD/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace", year_diff=1)
+    dataloader=UTKDataloader(root_dir=os.getcwd()+"\\UTKFace", year_diff=1)
     
 
     # Visualize the data
@@ -121,7 +128,9 @@ def main():
 
     for i in range(1, cols * rows + 1):
         sample_idx = torch.randint(len(dataloader), size=(1,)).item()
-        (img0, img1), label = dataloader[sample_idx]
+        images, label = dataloader[sample_idx]
+        img0=images[0]
+        img1=images[1]
 
         figure.add_subplot(rows, cols, i)
         plt.title(f"Left is older?: {label}")
