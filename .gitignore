@@ -1,3 +1,5 @@
-UTKFace/
+UTKFace/dataset
+UTKFace/train
+UTKFace/test
 
 *.pyc
