@@ -69,6 +69,9 @@ class Solver():
 
     def train(self):
         print("Training...")
+
+        running_loss = 0.0
+
         for epoch in range(self.epochs):
             self.model.train()
 
@@ -84,12 +87,15 @@ class Solver():
                 loss.backward()
                 self.optimizer.step()
 
-                n_iter=epoch * len(self.train_loader) + i
-                self.writer.add_scalar('Loss/train', loss.item(), n_iter)
+                running_loss += loss.item()
 
                 #TODO maybe add some other metrics to the writer
-                if i % self.args.print_every == 0:
-                    print("Epoch: {}, Iteration: {}, Loss: {}".format(epoch, i, loss.item()))
+                if i % self.args.print_every == self.args.print_every-1:  # print statistics, average loss over the last print_every mini-batches
+                   
+                    self.writer.add_scalar("Loss/train", running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
+
+                    print("Epoch: {}, Iteration: {}, Loss: {}".format(epoch, i, running_loss / self.args.print_every))
+                    running_loss = 0.0
 
                 self.writer.flush()
 
