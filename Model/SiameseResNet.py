@@ -20,10 +20,10 @@ class SiameseResNet(torch.nn.Module):
         )
 
     def forward(self, x):
-        img1,img2=torch.split(x,1,1) # [2, 2, 3, 224, 224] -> [2, 1, 3, 224, 224] [2, 1, 3, 224, 224]
+        img1,img2=torch.split(x,1,1) # [x, 2, 3, 224, 224] -> [x, 1, 3, 224, 224] [x, 1, 3, 224, 224]
 
-        img1=img1.squeeze(1) # [2, 1, 3, 224, 224] -> [2, 3, 224, 224]
-        img2=img2.squeeze(1) # [2, 1, 3, 224, 224] -> [2, 3, 224, 224]
+        img1=img1.squeeze(1) # [x, 1, 3, 224, 224] -> [x, 3, 224, 224]
+        img2=img2.squeeze(1) # [x, 1, 3, 224, 224] -> [x, 3, 224, 224]
 
         feature_map1=self.resnet_1(img1)
         feature_map1=feature_map1.view(feature_map1.size(0), -1) # [2, 512, 1, 1] -> [2, 512]
