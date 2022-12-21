@@ -36,13 +36,14 @@ class Solver():
 
 
 
-    def save_model(self, epoch):
+    def save_model(self, epoch,iteration):
         # if you want to save the model
         if not os.path.exists(self.args.checkpoint_path):
             os.mkdir(self.args.checkpoint_path)
         
+        # save the model with the name of the class and the epoch and iteration
         path = os.path.join(self.args.checkpoint_path, 
-                                    self.model.__class__.__name__ +"_"+str(epoch)+".pth")
+                                    self.model.__class__.__name__ +"_"+str(epoch)+"_"+str(iteration)+".pth")
 
         torch.save(self.model.state_dict(), path)
         print("Model saved!")
@@ -96,10 +97,11 @@ class Solver():
 
                     print("Epoch: {}, Iteration: {}, Loss: {}".format(epoch, i, running_loss / self.args.print_every))
                     running_loss = 0.0
+                    
+                    self.save_model(epoch, i)
 
                 self.writer.flush()
 
-            self.save_model(epoch)
 
         #TODO check if this is the right place to close the writer
         self.writer.close()
