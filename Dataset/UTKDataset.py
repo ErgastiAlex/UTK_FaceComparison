@@ -139,12 +139,12 @@ class UTKDataset(Dataset):
         return self.used_images
 
     def get_ages(self):
-        ages=list(map(lambda x: int(x[1]), self.images))
+        ages=list(map(lambda x: int(x[1]), self.used_images))
 
         return ages
     
     def get_ages_diff(self):
-        age_diffs=list(map(lambda x: abs(int(x[0][1]) - int(x[1][1])), self.image_combinations))
+        age_diffs=list(map(lambda x: abs(int(x[0][1]) - int(x[1][1])), self.data))
         return age_diffs
 
 
