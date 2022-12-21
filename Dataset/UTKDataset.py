@@ -42,6 +42,7 @@ class UTKDataset(Dataset):
         self.data=[] # This will contain the data that will be returned by the __getitem__ function
         self.used_images=[] # This will contain the images that have been used to generate the dataset
         self.images_data=[] # This will contain the images and the ages
+        self.age_diff=[]  # This will contain all the age differences between the images
         
         self.__create_dataset()
 
@@ -79,16 +80,20 @@ class UTKDataset(Dataset):
         tries=0
         max_tries=1000
 
+
+
         # Get all the combinations of images
         while len(self.data) < self.data_size and tries < max_tries:
             img1,age1=random.choice(self.images_data)
             img2,age2=random.choice(self.images_data)
 
             is_img1_older_than_img2=1 if age1 > age2 else 0
+            age_diff=abs(age1 - age2)
 
             # Check if the age difference is greater than the year_diff and if the combination has not been added yet
-            if abs(age1 - age2) >= self.year_diff and ((img1,img2), is_img1_older_than_img2) not in self.data:
+            if age_diff >= self.year_diff and ((img1,img2), is_img1_older_than_img2) not in self.data:
 
+                self.age_diff.append(age_diff)
                 # Add the combination to the list, ((image1, image2), label)  where label is 1 if image1 is older than image2, 0 otherwise
                 self.data.append(((img1,img2),is_img1_older_than_img2))
 
@@ -140,12 +145,10 @@ class UTKDataset(Dataset):
 
     def get_ages(self):
         ages=list(map(lambda x: int(x[1]), self.images_data))
-
         return ages
     
     def get_ages_diff(self):
-        age_diffs=list(map(lambda x: abs(int(x[0][1]) - int(x[1][1])), self.data))
-        return age_diffs
+        return self.age_diff
 
 
 def main():
@@ -183,6 +186,26 @@ def main():
 
     print(f"Intersection test and training set: {list(set(test_dataloader.get_used_images()) & set(dataloader.get_used_images()))}")
 
+    train_ages=dataloader.get_ages()
+    train_age_diffs=dataloader.get_ages_diff()
+
+    test_ages=test_dataloader.get_ages()
+    test_age_diffs=test_dataloader.get_ages_diff()
+    
+    plot_hist_comparison(plt, train_ages, test_ages, "age distribution")
+    plot_hist_comparison(plt, train_age_diffs, test_age_diffs, "age difference distribution")
+
+def plot_hist_comparison(plt, train, test, suffix):
+    figure = plt.figure(figsize=(8, 8))
+
+    figure.add_subplot(1, 2, 1)
+    plt.hist(train, bins=range(min(train), max(train) + 1, 1))
+    plt.title("Train "+suffix)
+
+    figure.add_subplot(1, 2, 2)
+    plt.hist(test, bins=range(min(test), max(test) + 1, 1))
+    plt.title("Test "+suffix)
+    plt.show()
 
 
 if __name__ == "__main__":
