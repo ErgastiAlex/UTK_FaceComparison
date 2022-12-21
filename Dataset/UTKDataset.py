@@ -3,14 +3,13 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 
 import glob
-from itertools import permutations 
 import random
 from PIL import Image
 import re
 
 
 class UTKDataset(Dataset):
-    def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1, data_size:int = 1000, exclude_images=[]):
+    def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1, data_size:int = 10000, exclude_images=[]):
         """
         Args:
             root_dir (string): Directory with all the images.
@@ -26,18 +25,23 @@ class UTKDataset(Dataset):
         self.transform = transform
         self.year_diff = year_diff
 
-        self.__get_all_images_in_dir(root_dir)
+        self.files=self.__get_all_images_in_dir(root_dir)
         self.exclude_images=exclude_images
+
+        # Remove the images that are in the exclude_images list
+        self.files=list(filter(lambda x: x not in self.exclude_images, self.files))
         
         if data_size<=0:
             raise Exception("Data size must be greater than 0")
         
         self.data_size=data_size
-        self.__clamp_data_size()
-        self.__select_images_randomly()
 
         if(len(self.files)==0):
             raise Exception("No images found in the directory")
+
+        self.data=[] # This will contain the data that will be returned by the __getitem__ function
+        self.used_images=[] # This will contain the images that have been used to generate the dataset
+        self.images_data=[] # This will contain the images and the ages
         
         self.__create_dataset()
 
@@ -47,48 +51,58 @@ class UTKDataset(Dataset):
         Get all the images in the directory
         """
         if root_dir[-1]=="/":
-            self.files = glob.glob(root_dir + '*.jpg')
+            return glob.glob(root_dir + '*.jpg')
         else:
-            self.files = glob.glob(root_dir + '/*.jpg')
-    
-
-    def __clamp_data_size(self):
-        """
-        Clamp the data size to the number of images in the directory if it is greater
-        """
-        if self.data_size>len(self.files)-len(self.exclude_images):
-            self.data_size=len(self.files)-len(self.exclude_images)
-
- 
-        
-
-    def __select_images_randomly(self):
-        """
-        Select @data_size images randomly from the directory excluding the images in @exclude_images
-        """
-        self.files=list(filter(lambda x: x not in self.exclude_images, self.files))
-        self.files=random.sample(self.files, self.data_size)
+            return glob.glob(root_dir + '/*.jpg')
 
 
     def __create_dataset(self):
-        self.images=map(lambda x: (x,re.search("(\d+)_\d_\d_\d+\.jpg.*",x)), self.files)
+        #Map the images to a tuple (image_name, age)
+        self.images_data=map(lambda x: (x,re.search("(\d+)_\d_\d_\d+\.jpg.*",x)), self.files)
 
-        #remove all non-matching images, just in case!
-        self.images=filter(lambda x: x[1]!=None, self.images)
+        #remove all images that do not have an age, just to be safe
+        self.images_data=filter(lambda x: x[1]!=None, self.images_data)
 
         #This must be a list, otherwise DataLoader will not work
-        self.images=list(map(lambda x: (x[0],x[1].group(1)), self.images))
+        self.images_data:tuple(str,int)=list(map(lambda x: (x[0],int(x[1].group(1))), self.images_data))
 
-        # Create all possible combinations of images
-        self.image_combinations = permutations(self.images, 2)
+        self.__get_images_combinations()
         
-        # Filter out images with age difference less than year_diff
-        self.image_combinations=list(filter(lambda x: abs(int(x[0][1]) - int(x[1][1])) >= self.year_diff, self.image_combinations))
-
-        # Create a list of tuples ((image1, image2), label)
-        self.data= list(map(lambda x: ((x[0][0], x[1][0]), 
-                                    1 if int(x[0][1]) > int(x[1][1]) else 0), self.image_combinations))
                       
+
+    def __get_images_combinations(self):
+        """
+        Extract @data_size number of combinations of images
+        """
+
+        # To avoid infinite loops
+        tries=0
+        max_tries=1000
+
+        # Get all the combinations of images
+        while len(self.data) < self.data_size and tries < max_tries:
+            img1,age1=random.choice(self.images_data)
+            img2,age2=random.choice(self.images_data)
+
+            is_img1_older_than_img2=1 if age1 > age2 else 0
+
+            # Check if the age difference is greater than the year_diff and if the combination has not been added yet
+            if abs(age1 - age2) >= self.year_diff and ((img1,img2), is_img1_older_than_img2) not in self.data:
+
+                # Add the combination to the list, ((image1, image2), label)  where label is 1 if image1 is older than image2, 0 otherwise
+                self.data.append(((img1,img2),is_img1_older_than_img2))
+
+                self.__add_image_to_used_images(img1)
+                self.__add_image_to_used_images(img2)
+
+                # Reset the tries counter
+                tries=0
+            else:
+                tries+=1
+            
+    def __add_image_to_used_images(self, img):
+        if img not in self.used_images:
+            self.used_images.append(img)
 
     def __len__(self):
         return len(self.data)
@@ -121,8 +135,8 @@ class UTKDataset(Dataset):
             img = img.convert('RGB')
         return img
 
-    def get_images(self):
-        return self.images
+    def get_used_images(self):
+        return self.used_images
 
     def get_ages(self):
         ages=list(map(lambda x: int(x[1]), self.images))
@@ -152,7 +166,7 @@ def main():
         img1=images[1]
 
         figure.add_subplot(rows, cols, i)
-        plt.title(f"Left is older?: {label}")
+        plt.title(f"Left is older?: {label.item()}")
 
         plt.axis("off")
 
@@ -160,6 +174,15 @@ def main():
 
     plt.tight_layout()
     plt.show()
+
+    print(f"Dataloader size={len(dataloader)}")
+
+    test_dataloader=UTKDataset(root_dir=os.getcwd()+"\\UTKFace", year_diff=1, exclude_images=dataloader.get_used_images())
+
+    print(f"Test dataloader size={len(test_dataloader)}")
+
+    print(f"Intersection test and training set: {list(set(test_dataloader.get_used_images()) & set(dataloader.get_used_images()))}")
+
 
 
 if __name__ == "__main__":
