@@ -139,7 +139,7 @@ class UTKDataset(Dataset):
         return self.used_images
 
     def get_ages(self):
-        ages=list(map(lambda x: int(x[1]), self.used_images))
+        ages=list(map(lambda x: int(x[1]), self.images_data))
 
         return ages
     
