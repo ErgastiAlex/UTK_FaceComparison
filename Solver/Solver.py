@@ -68,10 +68,11 @@ class Solver():
 
 
     def train(self):
+        print("Training...")
         for epoch in range(self.epochs):
             self.model.train()
 
-            for i, (x, y) in enumerate(self.train_loader):
+            for i, (x, y) in enumerate(self.train_loader,0):
                 x = x.to(self.device)
                 y = y.to(self.device)
 

@@ -7,11 +7,11 @@ class SiameseResNet(torch.nn.Module):
 
 
         #create two siamese resnet and remove the last not used layer
-        self.resnet_1=models.resnet18()
-        feature_map_dim=2*self.resnet_1.fc.in_features
-        
-        del self.resnet_1.fc
+        temporal_resnet=models.resnet18()
+        self.resnet_1 = torch.nn.Sequential(*(list(temporal_resnet.children())[:-1]))
 
+        feature_map_dim=2*temporal_resnet.fc.in_features
+        
         self.fc=torch.nn.Sequential(
             torch.nn.Linear(feature_map_dim,100,bias=True),
             torch.nn.ReLU(),
@@ -20,19 +20,24 @@ class SiameseResNet(torch.nn.Module):
         )
 
     def forward(self, x):
-        img1=x[0]
-        img2=x[1]
+        img1,img2=torch.split(x,1,1) # [2, 2, 3, 224, 224] -> [2, 1, 3, 224, 224] [2, 1, 3, 224, 224]
+
+        img1=img1.squeeze(1) # [2, 1, 3, 224, 224] -> [2, 3, 224, 224]
+        img2=img2.squeeze(1) # [2, 1, 3, 224, 224] -> [2, 3, 224, 224]
 
         feature_map1=self.resnet_1(img1)
+        feature_map1=feature_map1.view(feature_map1.size(0), -1) # [2, 512, 1, 1] -> [2, 512]
+
         feature_map2=self.resnet_1(img2)
-        
+        feature_map2=feature_map2.view(feature_map2.size(0), -1) # [2, 512, 1, 1] -> [2, 512]
+
         feature_map=torch.cat((feature_map1,feature_map2),1)
 
         return self.fc(feature_map)
 
 
 def main():
-    m=DoubleResNet()
+    m=SiameseResNet()
     print(m)
 
 

@@ -107,7 +107,13 @@ class UTKDataset(Dataset):
             img0=toTensor(img0)
             img1=toTensor(img1)
 
-        return torch.stack((img0,img1),0), self.data[idx][1]
+        # get the label
+        labels=torch.tensor(self.data[idx][1])
+        labels=labels.unsqueeze(-1).to(torch.float32) # [x] -> [x,1] and convert to float32
+
+        images=torch.stack((img0,img1),dim=0)
+        
+        return images, labels
         
 
     def __load_image(img_name):
