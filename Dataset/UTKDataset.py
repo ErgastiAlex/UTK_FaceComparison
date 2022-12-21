@@ -56,15 +56,15 @@ class UTKDataset(Dataset):
         """
         Clamp the data size to the number of images in the directory if it is greater
         """
-        if self.data_size>len(self.files):
-            self.data_size=len(self.files)
+        if self.data_size>len(self.files)-len(self.exclude_images):
+            self.data_size=len(self.files)-len(self.exclude_images)
 
  
         
 
     def __select_images_randomly(self):
         """
-        Select @data_size images randomly from the directory
+        Select @data_size images randomly from the directory excluding the images in @exclude_images
         """
         self.files=list(filter(lambda x: x not in self.exclude_images, self.files))
         self.files=random.sample(self.files, self.data_size)
@@ -80,15 +80,14 @@ class UTKDataset(Dataset):
         self.images=list(map(lambda x: (x[0],x[1].group(1)), self.images))
 
         # Create all possible combinations of images
-        image_combinations = permutations(self.images, 2)
+        self.image_combinations = permutations(self.images, 2)
         
         # Filter out images with age difference less than year_diff
-        image_combinations=filter(lambda x: abs(int(x[0][1]) - int(x[1][1])) >= self.year_diff, image_combinations)
-
+        self.image_combinations=list(filter(lambda x: abs(int(x[0][1]) - int(x[1][1])) >= self.year_diff, self.image_combinations))
 
         # Create a list of tuples ((image1, image2), label)
         self.data= list(map(lambda x: ((x[0][0], x[1][0]), 
-                                    1 if int(x[0][1]) > int(x[1][1]) else 0), image_combinations))
+                                    1 if int(x[0][1]) > int(x[1][1]) else 0), self.image_combinations))
                       
 
     def __len__(self):
@@ -124,6 +123,15 @@ class UTKDataset(Dataset):
 
     def get_images(self):
         return self.images
+
+    def get_ages(self):
+        ages=list(map(lambda x: int(x[1]), self.images))
+
+        return ages
+    
+    def get_ages_diff(self):
+        age_diffs=list(map(lambda x: abs(int(x[0][1]) - int(x[1][1])), self.image_combinations))
+        return age_diffs
 
 
 def main():
