@@ -1,6 +1,8 @@
 import torch
 import os
 import glob
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 
 class Solver():
     def __init__(self, train_loader, test_loader, device, model, writer, args):
@@ -16,6 +18,7 @@ class Solver():
         
         self.device = device
         self.model.to(self.device)
+        self.tsne=TSNE(n_components=2)
 
 
         if args.resume_train:
@@ -119,6 +122,8 @@ class Solver():
             # Early stopping 
             evalutation_loss, evaluation_accuracy= self.evaluate()
 
+            self.__plot_tsne(epoch)
+
             self.writer.add_scalar("Loss/eval",evalutation_loss,epoch)
             self.writer.add_scalar("Accuracy/eval",evaluation_accuracy,epoch)
 
@@ -146,6 +151,7 @@ class Solver():
 
                 running_loss+= loss.item()
                 accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
+                
         
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
@@ -166,6 +172,30 @@ class Solver():
 
                 running_loss+= loss.item()
                 accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
+
         
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
+    def __plot_tsne(self,epoch):
+        self.model.eval()
+
+
+        with torch.no_grad():
+            (x,y) = next(iter(self.test_loader))
+
+            x = x.to(self.device)
+            y = y.to(self.device)
+
+            feature_map1, feature_map2 = self.model.get_feature_map(x)
+
+            feature_map=torch.cat((feature_map1,feature_map2),1)
+
+            tsne=self.tsne.fit_transform(feature_map.cpu().numpy())
+            tx=tsne[:,0]
+            ty=tsne[:,1]
+
+            plt.scatter(tx, ty, c=y.cpu().numpy(), s=20, cmap=plt.cm.Spectral)
+
+            self.writer.add_figure("TSNE",plt.gcf(),epoch)
+            self.writer.flush()
+            
