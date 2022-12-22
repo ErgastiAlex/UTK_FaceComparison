@@ -92,7 +92,7 @@ class Solver():
 
                 running_loss += loss.item()
 
-                accuracy += (torch.gt(output).int() == y).sum().item() / y.shape[0]
+                accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
 
 
                 #TODO add PR curve
