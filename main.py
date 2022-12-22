@@ -1,5 +1,4 @@
 import torch
-import torchvision
 import torchvision.transforms as transforms
 import argparse
 
@@ -21,11 +20,11 @@ def get_args():
                         default="exp1", help='name of current run')
 
     # Training parameters
-    parser.add_argument('--epochs', type=int, default=2, help='number of epochs')
-    parser.add_argument('--batch_size', type=int, default=16, help='number of elements in batch size')
+    parser.add_argument('--epochs', type=int, default=16, help='number of epochs')
+    parser.add_argument('--batch_size', type=int, default=32, help='number of elements in batch size')
 
-    parser.add_argument('--workers', type=int, default=1, help='number of workers in data loader')
-    parser.add_argument('--print_every', type=int, default=500, help='print losses every N iteration')
+    parser.add_argument('--workers', type=int, default=4, help='number of workers in data loader')
+    parser.add_argument('--print_every', type=int, default=100, help='print losses every N iteration')
 
 
     # Model parameters
@@ -33,7 +32,7 @@ def get_args():
     parser.add_argument('--lr', type=int, default=0.001, help='learning rate')
     parser.add_argument('--opt', type=str, default='Adam', choices=['SGD', 'Adam'], help = 'optimizer used for training')
     parser.add_argument('--criterion', type=str, default='BCELoss', choices=['BCELoss', 'MSELoss'], help = 'criterion used for training')
-
+    parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay for the optimizer')
     #TODO implement automatic hyperparameter tuning
     # Automatic hyperparameter tuning
     parser.add_argument('--autotune', action='store_true', help='enable automatic hyperparameter tuning')
@@ -42,7 +41,9 @@ def get_args():
 
 
     # Path parameters
-    parser.add_argument('--dataset_path', type=str, default='./UTKFace', help='path were to get the dataset')
+    parser.add_argument('--training_set_path', type=str, default='./UTKFace/train', help='training set path')
+    parser.add_argument('--validation_set_path', type=str, default='./UTKFace/val', help='validation set path')
+    parser.add_argument('--test_set_path', type=str, default='./UTKFace/test', help='test set path')
     parser.add_argument('--checkpoint_path', type=str, default='./models', help='path were to save the trained model')
 
 
@@ -51,8 +52,9 @@ def get_args():
     # Dataset parameters
     parser.add_argument('--seed', type=int, default=42, help='seed for the random number generator')
     parser.add_argument('--year_diff', type=int, default=1, help='minimum age difference between the two images')
-    parser.add_argument('--train_size', type=int, default=500, help='number of images to use to generate the training dataset. If it is greater than the number of images in the directory, it will be clamped to the number of images in the directory')
-    parser.add_argument('--test_size', type=int, default=100, help='number of images to use to generate the test dataset.')
+    parser.add_argument('--train_size', type=int, default=100000, help='number of images to use to generate the training dataset. If it is greater than the number of images in the directory, it will be clamped to the number of images in the directory')
+    parser.add_argument('--validation_size', type=int, default=5000, help='number of images to use to generate the validation dataset.')
+    parser.add_argument('--test_size', type=int, default=5000, help='number of images to use to generate the test dataset.')
 
     return parser.parse_args()
 
@@ -64,8 +66,9 @@ def main(args):
     transform=get_transform(args.disable_norm)
 
     # Load the dataset 
-    train_dataset=UTKDataset(root_dir=args.dataset_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.train_size)
-    test_dataset=UTKDataset(root_dir=args.dataset_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size,exclude_images=train_dataset.get_images())
+    train_dataset=UTKDataset(root_dir=args.training_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.train_size)
+    validation_dataset=UTKDataset(root_dir=args.validation_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.validation_size)
+    test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
 
     utility.display_dataset_info(train_dataset, 5, 10,prefix="train")
     utility.display_dataset_info(test_dataset, 5, 10,prefix="test")
@@ -73,6 +76,7 @@ def main(args):
     
     # Create the dataloaders
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
+    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
 
 
@@ -86,9 +90,11 @@ def main(args):
     if args.autotune==False:
         utility.add_model_info_to_tensorboard(writer, args, model)
 
-        solver= Solver(train_loader,test_loader,device,SiameseResNet(),writer,args)
+        solver= Solver(train_loader,validation_loader,device,SiameseResNet(),writer,args)
 
         solver.train()
+
+    writer.close()
 
 
 def get_transform(disalbe_norm):
