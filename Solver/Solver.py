@@ -102,8 +102,9 @@ class Solver():
                     self.writer.add_scalar("Loss/train",running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
                     self.writer.add_scalar("Accuracy/train",accuracy / self.args.print_every, epoch * len(self.train_loader) + i)
 
-                    print("Epoch: {}, Iteration: {}, Loss: {}".format(epoch, i, running_loss / self.args.print_every))
+                    print("Epoch: {}, Iteration: {}, Loss: {}, Accuracy: {}".format(epoch, i, running_loss / self.args.print_every, accuracy / self.args.print_every))
                     running_loss = 0.0
+                    accuracy = 0.0
                     
                     self.save_model(epoch, i)
 
