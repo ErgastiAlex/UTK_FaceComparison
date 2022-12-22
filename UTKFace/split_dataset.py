@@ -8,10 +8,10 @@ import os
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--dataset_path', type=str, default='D:\\Alex\\Universita\\Parma - Scienze Informatiche\\2INF\\Deep Learning and Generative Models\\Progetto\\UTKFace\\dataset', help='path to the dataset')
-    parser.add_argument('--trainset_path', type=str, default='D:\\Alex\\Universita\\Parma - Scienze Informatiche\\2INF\\Deep Learning and Generative Models\\Progetto\\UTKFace\\train', help='path to the trainset')
-    parser.add_argument('--valset_path', type=str, default='D:\\Alex\\Universita\\Parma - Scienze Informatiche\\2INF\\Deep Learning and Generative Models\\Progetto\\UTKFace\\val', help='path to the validation set')
-    parser.add_argument('--testset_path', type=str, default='D:\\Alex\\Universita\\Parma - Scienze Informatiche\\2INF\\Deep Learning and Generative Models\\Progetto\\UTKFace\\test', help='path to the testset')
+    parser.add_argument('--dataset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/dataset', help='path to the dataset')
+    parser.add_argument('--trainset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/train', help='path to the trainset')
+    parser.add_argument('--valset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/val', help='path to the validation set')
+    parser.add_argument('--testset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/test', help='path to the testset')
 
     parser.add_argument('--train_size', type=int, default=70, help='percentage of the dataset to use for the training set')
     parser.add_argument('--val_size', type=int, default=20, help='percentage of the dataset to use for the validation set')
