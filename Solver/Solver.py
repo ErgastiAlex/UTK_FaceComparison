@@ -70,13 +70,12 @@ class Solver():
     def train(self):
         print("Training...")
 
-        running_loss = 0.0
-        accuracy = 0.0
-
         evalutation_best_performance = 100000
 
         for epoch in range(self.epochs):
             self.model.train()
+            running_loss = 0.0
+            accuracy = 0.0
 
             for i, (x, y) in enumerate(self.train_loader,0):
                 x = x.to(self.device)
