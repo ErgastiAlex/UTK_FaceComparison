@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument('--epochs', type=int, default=16, help='number of epochs')
     parser.add_argument('--batch_size', type=int, default=32, help='number of elements in batch size')
 
-    parser.add_argument('--workers', type=int, default=4, help='number of workers in data loader')
+    parser.add_argument('--workers', type=int, default=1, help='number of workers in data loader')
     parser.add_argument('--print_every', type=int, default=100, help='print losses every N iteration')
 
 
@@ -55,11 +55,41 @@ def get_args():
     parser.add_argument('--train_size', type=int, default=100000, help='number of images to use to generate the training dataset. If it is greater than the number of images in the directory, it will be clamped to the number of images in the directory')
     parser.add_argument('--validation_size', type=int, default=5000, help='number of images to use to generate the validation dataset.')
     parser.add_argument('--test_size', type=int, default=5000, help='number of images to use to generate the test dataset.')
+    
+    parser.add_argument('--test', action='store_true', help='test the model on the test set')
 
     return parser.parse_args()
 
 
 def main(args):
+    if args.test==True:
+        test_model(args)
+    else:
+        train_model(args)
+
+def test_model(args):
+    writer=SummaryWriter('./runs/test/' + args.run_name)
+
+    transform=get_transform(args.disable_norm)
+
+    # Load the dataset 
+    test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
+
+    # Create the dataloaders
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+
+    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("Using device: ")
+    print(device)
+
+    model=choose_model(args)
+
+    solver=Solver(None,test_loader,device,model,writer,args)
+    solver.load_model()
+    solver.test()
+
+    
+def train_model(args):
     writer = SummaryWriter('./runs/' + args.run_name)
 
 
@@ -97,15 +127,15 @@ def main(args):
     writer.close()
 
 
-def get_transform(disalbe_norm):
-    if disalbe_norm:
+def get_transform(disable_norm):
+    if disable_norm:
         return transforms.Compose([
-            transforms.Resize((224,224)),
+            # transforms.Resize((224,224)), #We don't need resize thanks to AdaptiveAvgPool2d
             transforms.ToTensor()
         ])
     else:
         return transforms.Compose([
-            transforms.Resize((224,224)),
+            # transforms.Resize((224,224)),
             transforms.ToTensor(),
             transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
         ])
