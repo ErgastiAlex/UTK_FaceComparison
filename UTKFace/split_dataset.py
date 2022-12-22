@@ -22,13 +22,15 @@ def get_args():
 
 def main():
     args = get_args()
+    print(args)
     assert args.train_size + args.val_size + args.test_size == 100, "The sum of the train, val and test size must be 1"
 
     train_images=np.empty(0)
     val_images=np.empty(0)
     test_images=np.empty(0)
 
-    images=np.array(glob.glob(args.dataset_path + '\\*.jpg'))
+    images=np.array(glob.glob(args.dataset_path + '/*.jpg'))
+    print(images)
 
     ages=np.vectorize(lambda x: re.search("(\d+)_\d_\d_\d+\.jpg.*",x))(images)
     images_data=np.c_[images,ages]
@@ -70,13 +72,13 @@ def main():
     print("Saving images...")
     # save the train and test images
     for image in train_images:
-        shutil.copy(image, args.trainset_path+'\\'+image.split('\\')[-1])
+        shutil.copy(image, args.trainset_path+'/'+image.split('/')[-1])
 
     for image in val_images:
-        shutil.copy(image, args.valset_path+'\\'+image.split('\\')[-1])
+        shutil.copy(image, args.valset_path+'/'+image.split('/')[-1])
 
     for image in test_images:
-        shutil.copy(image, args.testset_path+'\\'+image.split('\\')[-1])
+        shutil.copy(image, args.testset_path+'/'+image.split('/')[-1])
 
     
     
