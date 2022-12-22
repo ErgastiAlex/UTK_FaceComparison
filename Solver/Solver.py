@@ -26,8 +26,7 @@ class Solver():
             self.criterion = torch.nn.MSELoss()
 
         if args.opt == "Adam":
-            #TODO add weight decay
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=args.lr)
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         elif args.optimizer == "SGD":
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=args.lr)
 
@@ -72,6 +71,9 @@ class Solver():
         print("Training...")
 
         running_loss = 0.0
+        accuracy = 0.0
+
+        evalutation_best_performance = 100000
 
         for epoch in range(self.epochs):
             self.model.train()
@@ -90,10 +92,15 @@ class Solver():
 
                 running_loss += loss.item()
 
-                #TODO maybe add some other metrics to the writer
+                accuracy += (torch.gt(output).int() == y).sum().item() / y.shape[0]
+
+
+                #TODO add PR curve
+
                 if i % self.args.print_every == self.args.print_every-1:  # print statistics, average loss over the last print_every mini-batches
                    
-                    self.writer.add_scalar("Loss/train", running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
+                    self.writer.add_scalar("Loss/train",running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
+                    self.writer.add_scalar("Accuracy/train",accuracy / self.args.print_every, epoch * len(self.train_loader) + i)
 
                     print("Epoch: {}, Iteration: {}, Loss: {}".format(epoch, i, running_loss / self.args.print_every))
                     running_loss = 0.0
@@ -102,6 +109,39 @@ class Solver():
 
                 self.writer.flush()
 
+            # Early stopping 
+            evalutation_loss= self.evaluate()
 
-        #TODO check if this is the right place to close the writer
-        self.writer.close()
+            self.writer.add_scalar("Loss/eval",evalutation_loss,epoch)
+
+            if evalutation_loss < evalutation_best_performance:
+                evalutation_best_performance = evalutation_loss
+                self.save_model(epoch, len(self.train_loader))
+            else:
+                print("The model did not improve and has started to overfit, the best performance was: {}".format(evalutation_best_performance))
+                break
+
+    def evaluate(self):
+        print("Evaluating...")
+        self.model.eval()
+
+        running_loss = 0.0
+        with torch.no_grad():
+            for i, (x, y) in enumerate(self.test_loader,0):
+                x = x.to(self.device)
+                y = y.to(self.device)
+
+                output = self.model(x)
+                loss = self.criterion(output, y)
+
+                running_loss+= loss.item()
+        
+        return running_loss / len(self.test_loader)
+
+    def predict(self,x):
+        self.model.eval()
+        with torch.no_grad():
+            x = x.to(self.device)
+            output = self.model(x)
+            return output
+
