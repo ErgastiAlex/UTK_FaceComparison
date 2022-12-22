@@ -111,10 +111,12 @@ class Solver():
                 self.writer.flush()
 
             # Early stopping 
-            evalutation_loss= self.evaluate()
+            evalutation_loss, evaluation_accuracy= self.evaluate()
 
             self.writer.add_scalar("Loss/eval",evalutation_loss,epoch)
+            self.writer.add_scalar("Accuracy/eval",evaluation_accuracy,epoch)
 
+            # For early stopping we use the loss on the validation set not the accuracy
             if evalutation_loss < evalutation_best_performance:
                 evalutation_best_performance = evalutation_loss
                 self.save_model(epoch, len(self.train_loader))
@@ -127,6 +129,7 @@ class Solver():
         self.model.eval()
 
         running_loss = 0.0
+        accuracy = 0.0
         with torch.no_grad():
             for i, (x, y) in enumerate(self.test_loader,0):
                 x = x.to(self.device)
@@ -136,8 +139,9 @@ class Solver():
                 loss = self.criterion(output, y)
 
                 running_loss+= loss.item()
+                accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
         
-        return running_loss / len(self.test_loader)
+        return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
     def predict(self,x):
         self.model.eval()
