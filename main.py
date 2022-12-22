@@ -27,11 +27,16 @@ def get_args():
     parser.add_argument('--print_every', type=int, default=100, help='print losses every N iteration')
 
 
-    # Model parameters
+    # Model 
     parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet'], help='model used')
+    parser.add_argument('--hidden_layers',nargs='+',default=[512, 256, 128], help='hidden layers of the model, currently only for SiameseResNet')
+
+    #Model parameters
     parser.add_argument('--lr', type=int, default=0.001, help='learning rate')
     parser.add_argument('--opt', type=str, default='Adam', choices=['SGD', 'Adam'], help = 'optimizer used for training')
     parser.add_argument('--criterion', type=str, default='BCELoss', choices=['BCELoss', 'MSELoss'], help = 'criterion used for training')
+
+
     parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay for the optimizer')
     #TODO implement automatic hyperparameter tuning
     # Automatic hyperparameter tuning
@@ -88,7 +93,7 @@ def test_model(args):
     solver.load_model()
     solver.test()
 
-    
+
 def train_model(args):
     writer = SummaryWriter('./runs/' + args.run_name)
 
@@ -144,7 +149,7 @@ def get_transform(disable_norm):
 
 def choose_model(args):
     if args.model == 'SiameseResNet':
-        return SiameseResNet()
+        return SiameseResNet(hidden_layers=args.hidden_layers)
 
 
 
