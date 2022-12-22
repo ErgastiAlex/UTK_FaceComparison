@@ -15,7 +15,7 @@ class UTKDataset(Dataset):
             transform (callable, optional): Optional transform to be applied on a sample.
             seed (int): Seed for the random number generator
             year_diff (int): Minimum age difference between the two images
-            data_size (int): Size of the dataset, if None or negative the dataset will be the maximum possible, if unique_images is True, the dataset will be the maximum possible with unique images
+            data_size (int): Size of the dataset, if None or negative the dataset will be the maximum possible, if unique_images is True, the dataset required size could not be reached
             duplicate_probability (float): Probability of duplication a combination of images by switching the images order, the duplication will return a greater dataset size by a factor of 1+duplicate_probability
             unique_images (bool): If True, an image will be used only in one combination
             return_image_age (bool): If True, the __getitem__ function will return the age of the images
@@ -85,18 +85,55 @@ class UTKDataset(Dataset):
         ages=self.images_data[:,1].astype(int)
 
         #Get index and age
-        images=np.c_[np.arange(ages.shape[0]),ages]
+        images_info=np.c_[np.arange(ages.shape[0]),ages]
 
-        selected_img=0
-        combinations_selected=np.empty(0)
+        images1_index=np.empty(0)
+        images2_index=np.empty(0)
+        left_is_older=np.empty(0) # 1 if images1 is older than images2, 0 otherwise
 
-        while images.shape[0]!=0:
-            available_images=images[images[:,1]>=ages[selected_img]+year_diff]
+        images1_age=np.empty(0)
+        images2_age=np.empty(0)
 
-            if available_images.shape[0]==0:
+        while images_info.shape[0]!=0:
+            if self.data_size is not None and self.data_size>0 and images1_index.shape[0]>=self.data_size:
                 break
 
+            selected_index1=np.random.choice(images_info.shape[0],1,replace=False)
+
+            img1_index=images_info[selected_index1,0]
+            img1_age=images_info[selected_index1,1]
         
+            #Get all the images that have an age difference greater than year_diff
+            available_images=images_info[np.abs(images_info[:,1]-img1_age)>=year_diff]
+
+            if available_images.shape[0]!=0:
+                #Select a random image from the available images
+                selected_index2=np.random.choice(available_images.shape[0],1,replace=False)
+
+                img2_index=available_images[selected_index2,0]
+                img2_age=available_images[selected_index2,1]
+
+                # Remove the image1 and image2 from the images_indexes
+                images_info=images_info[(images_info[:,0]!=img1_index) & (images_info[:,0]!=img2_index)]
+
+                #Add the image1 and image2 to the dataset
+                images1_index=np.append(images1_index,img1_index)
+                images2_index=np.append(images2_index,img2_index)
+                left_is_older=np.append(left_is_older,img1_age>img2_age)
+                images1_age=np.append(images1_age,img1_age)
+                images2_age=np.append(images2_age,img2_age)
+            else:
+                #Remove the image1 from the images_indexes because this image cannot be paired with any other image
+                images_info=images_info[images_info[:,0]!=img1_index]
+
+        images1=self.images_data[images1_index.astype(int),0]
+        images2=self.images_data[images2_index.astype(int),0]
+
+        self.age_diff=abs(images1_age-images2_age)
+
+        images1,images2,left_is_older,images1_age,images2_age=self.__duplicate_images(images1,images2,left_is_older,images1_age,images2_age,duplicate_probability)
+
+        self.data=np.c_[images1,images2,left_is_older,images1_age.astype(int),images2_age.astype(int)]
 
     def __get_images_combinations(self,year_diff,duplicate_probability):
         """
@@ -152,10 +189,10 @@ class UTKDataset(Dataset):
         self.age_diff=abs(ages[images1_index]-ages[images2_index])
 
 
-        images1,images2,left_is_older=self.__duplicate_images(images1,images2,left_is_older,duplicate_probability,images1_age,images2_age)
+        images1,images2,left_is_older,images1_age,images2_age=self.__duplicate_images(images1,images2,left_is_older,images1_age,images2_age,duplicate_probability)
 
         # Create the data that will be returned by the __getitem__ function
-        self.data=np.c_[images1,images2,left_is_older,images1_age,images2_age]
+        self.data=np.c_[images1,images2,left_is_older,images1_age.astype(int),images2_age.astype(int)]
         
     def __switch_images(self,images1,images2,left_is_older,images1_age,images2_age):
         """Switch half of the images order in the dataset"""
@@ -168,14 +205,14 @@ class UTKDataset(Dataset):
         left_is_older[switch_images_index]=1-left_is_older[switch_images_index]
 
 
-    def __duplicate_images(self,images1,images2,left_is_older,duplicate_probability,images1_age,images2_age):
+    def __duplicate_images(self,images1,images2,left_is_older,images1_age,images2_age,duplicate_probability):
         """Duplicate @duplicate_probability of the images in the dataset"""
-        duplicate_datasize=int(self.data_size*duplicate_probability)
+        duplicate_datasize=int(images1.shape[0]*duplicate_probability)
 
         if duplicate_datasize==0:
-            return images1,images2,left_is_older
+            return images1,images2,left_is_older,images1_age,images2_age
 
-        duplicate_images_index=np.random.choice(self.data_size,duplicate_datasize,replace=False)
+        duplicate_images_index=np.random.choice(images1.shape[0],duplicate_datasize,replace=False)
         
         images1=np.append(images1,images2[duplicate_images_index])
         images2=np.append(images2,images1[duplicate_images_index])
@@ -185,7 +222,7 @@ class UTKDataset(Dataset):
 
         self.age_diff=np.append(self.age_diff,abs(images1_age[duplicate_images_index]-images2_age[duplicate_images_index]))
 
-        return images1,images2,left_is_older
+        return images1,images2,left_is_older,images1_age,images2_age
 
 
 
@@ -231,18 +268,18 @@ class UTKDataset(Dataset):
         return img
 
     def get_ages(self):
-        ages=list(map(lambda x: int(x[1]), self.images_data))
+        ages=self.data[:,3:].reshape(-1)
         return ages
     
     def get_ages_diff(self):
-        return self.age_diff
+        return self.age_diff.astype(int)
 
 
 def main():
     import matplotlib.pyplot as plt
     import os
 
-    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, return_age=True)
+    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, return_age=True,unique_images=True,duplicate_probability=0.5)
     
 
     # Visualize the data
