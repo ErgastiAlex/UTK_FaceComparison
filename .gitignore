@@ -1,5 +1,6 @@
 UTKFace/dataset
 UTKFace/train
 UTKFace/test
+UTKFace/val
 
 *.pyc
