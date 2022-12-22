@@ -16,11 +16,14 @@ class UTKDataset(Dataset):
             seed (int): Seed for the random number generator
             year_diff (int): Minimum age difference between the two images
             data_size (int): Size of the dataset, if None or negative the dataset will be the maximum possible, if unique_images is True, the dataset required size could not be reached
-            duplicate_probability (float): Probability of duplication a combination of images by switching the images order, the duplication will return a greater dataset size by a factor of 1+duplicate_probability
+            duplicate_probability (float): [0..1] Probability of duplication a combination of images by switching the images order, the duplication will return a greater dataset size by a factor of 1+duplicate_probability
             unique_images (bool): If True, an image will be used only in one combination
             return_image_age (bool): If True, the __getitem__ function will return the age of the images
         """
         np.random.seed(seed)
+
+        if duplicate_probability<0 or duplicate_probability>1:
+            raise Exception("duplicate_probability must be between 0 and 1")
 
         self.data_size=data_size
 
@@ -40,6 +43,8 @@ class UTKDataset(Dataset):
         # Np array with the age difference between combination of images in the dataset
         self.age_diff=np.empty(0)  
         
+
+
         self.__create_dataset(year_diff,duplicate_probability,unique_images)
 
 
