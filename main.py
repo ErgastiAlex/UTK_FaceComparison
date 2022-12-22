@@ -1,6 +1,7 @@
 import torch
 import torchvision.transforms as transforms
-import argparse
+from torchvision import models
+import argparse, configparser
 
 
 from torch.utils.tensorboard import SummaryWriter
@@ -16,6 +17,8 @@ import numpy as np
 def get_args():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--config', type=str, required=False, help='path to config file')
+
     parser.add_argument('--run_name', type=str,
                         default="exp1", help='name of current run')
 
@@ -29,6 +32,7 @@ def get_args():
 
     # Model 
     parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet'], help='model used')
+    parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'], help='resnet type used for the model')
     parser.add_argument('--hidden_layers',nargs='+',default=[], help='hidden layers of the model, currently only for SiameseResNet')
     parser.add_argument('--use_dropout', action='store_true', help='use dropout for the model')
     parser.add_argument('--dropout_p', type=float, default=0.5, help='dropout rate for the model')
@@ -41,6 +45,7 @@ def get_args():
 
 
     parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay for the optimizer')
+
     #TODO implement automatic hyperparameter tuning
     # Automatic hyperparameter tuning
     parser.add_argument('--autotune', action='store_true', help='enable automatic hyperparameter tuning')
@@ -63,13 +68,27 @@ def get_args():
     parser.add_argument('--train_size', type=int, default=100000, help='number of images to use to generate the training dataset. If it is greater than the number of images in the directory, it will be clamped to the number of images in the directory')
     parser.add_argument('--validation_size', type=int, default=5000, help='number of images to use to generate the validation dataset.')
     parser.add_argument('--test_size', type=int, default=5000, help='number of images to use to generate the test dataset.')
-    
+    parser.add_argument('--unique_images', action='store_true', help='use only unique images for the tr aining dataset. If it is set to false, the same image can be used multiple times in each combination')
+    parser.add_argument('--duplicate_probability', type=float, default=0, help='probability of using the same combination of image two times in the training dataset. If it is set to 0, the same combination will not be used multiple times. If it is set to 1, the same combination will be used multiple times')
+
     parser.add_argument('--test', action='store_true', help='test the model on the test set')
 
-    return parser.parse_args()
+    args=parser.parse_args()
+
+    if args.config:
+        config = configparser.ConfigParser()
+        config.read(args.config)
+
+        defaults = {}
+        defaults.update(dict(config.items("Defaults")))
+        parser.set_defaults(**defaults)
+        args = parser.parse_args() # Overwrite arguments
+
+    return args
 
 
 def main(args):
+
     if args.test==True:
         test_model(args)
     else:
@@ -104,7 +123,7 @@ def train_model(args):
     transform=get_transform(args.disable_norm)
 
     # Load the dataset 
-    train_dataset=UTKDataset(root_dir=args.training_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.train_size)
+    train_dataset=UTKDataset(root_dir=args.training_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.train_size, unique_images=args.unique_images,duplicate_probability=args.duplicate_probability)
     validation_dataset=UTKDataset(root_dir=args.validation_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.validation_size)
     test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
 
@@ -152,8 +171,22 @@ def get_transform(disable_norm):
 
 def choose_model(args):
     if args.model == 'SiameseResNet':
+        get_resnet_model(args)
         return SiameseResNet(hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
 
+def get_resnet_model(args):
+    if args.resnet_type == 'resnet18':
+        return models.resnet18
+    elif args.resnet_type == 'resnet34':
+        return models.resnet34
+    elif args.resnet_type == 'resnet50':
+        return models.resnet50
+    elif args.resnet_type == 'resnet101':
+        return models.resnet101
+    elif args.resnet_type == 'resnet152':
+        return models.resnet152
+    else:
+        raise Exception("Invalid resnet model")
 
 
 
