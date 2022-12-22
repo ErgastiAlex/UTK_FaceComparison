@@ -30,6 +30,9 @@ def get_args():
     # Model 
     parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet'], help='model used')
     parser.add_argument('--hidden_layers',nargs='+',default=[512, 256, 128], help='hidden layers of the model, currently only for SiameseResNet')
+    parser.add_argument('--use_dropout', action='store_true', help='use dropout for the model')
+    parser.add_argument('--dropout_p', type=float, default=0.5, help='dropout rate for the model')
+
 
     #Model parameters
     parser.add_argument('--lr', type=int, default=0.001, help='learning rate')
@@ -149,7 +152,7 @@ def get_transform(disable_norm):
 
 def choose_model(args):
     if args.model == 'SiameseResNet':
-        return SiameseResNet(hidden_layers=args.hidden_layers)
+        return SiameseResNet(hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
 
 
 

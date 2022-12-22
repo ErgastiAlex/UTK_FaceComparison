@@ -2,7 +2,7 @@ from torchvision import models
 import torch
 
 class SiameseResNet(torch.nn.Module):
-    def __init__(self,hidden_layers=[100], resnet_type=models.resnet50):
+    def __init__(self,hidden_layers=[100], resnet_type=models.resnet50, use_dropout=False, dropout_p=0.5):
         super().__init__() 
 
 
@@ -14,11 +14,17 @@ class SiameseResNet(torch.nn.Module):
 
 
         fc_layers=[torch.nn.Linear(feature_map_dim,hidden_layers[0],bias=True)]
+        if use_dropout:
+            fc_layers.append(torch.nn.Dropout(p=dropout_p))
         fc_layers.append(torch.nn.ReLU())
+
 
         for i in range(len(hidden_layers)-1):
             fc_layers.append(torch.nn.Linear(hidden_layers[i],hidden_layers[i+1],bias=True))
+            if use_dropout:
+                fc_layers.append(torch.nn.Dropout(p=dropout_p))
             fc_layers.append(torch.nn.ReLU())
+
 
         fc_layers.append(torch.nn.Linear(hidden_layers[-1],1,bias=True))
         fc_layers.append(torch.nn.Sigmoid())
