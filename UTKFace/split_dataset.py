@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import re
 import shutil
+import os
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -12,16 +13,16 @@ def get_args():
     parser.add_argument('--valset_path', type=str, default='D:\\Alex\\Universita\\Parma - Scienze Informatiche\\2INF\\Deep Learning and Generative Models\\Progetto\\UTKFace\\val', help='path to the validation set')
     parser.add_argument('--testset_path', type=str, default='D:\\Alex\\Universita\\Parma - Scienze Informatiche\\2INF\\Deep Learning and Generative Models\\Progetto\\UTKFace\\test', help='path to the testset')
 
-    parser.add_argument('--train_size', type=float, default=0.8, help='percentage of the dataset to use for the training set')
-    parser.add_argument('--val_size', type=float, default=0.2, help='percentage of the dataset to use for the validation set')
-    parser.add_argument('--test_size', type=float, default=0.1, help='percentage of the dataset to use for the test set')
-
-    assert parser.parse_args().train_size + parser.parse_args().val_size + parser.parse_args().test_size == 1, "The sum of the train, val and test size must be 1"
+    parser.add_argument('--train_size', type=int, default=70, help='percentage of the dataset to use for the training set')
+    parser.add_argument('--val_size', type=int, default=20, help='percentage of the dataset to use for the validation set')
+    parser.add_argument('--test_size', type=int, default=10, help='percentage of the dataset to use for the test set')
+    
     return parser.parse_args()
 
 
 def main():
     args = get_args()
+    assert args.train_size + args.val_size + args.test_size == 100, "The sum of the train, val and test size must be 1"
 
     train_images=np.empty(0)
     val_images=np.empty(0)
@@ -42,20 +43,31 @@ def main():
         age=age_count[0][i]
         count=age_count[1][i]
 
-        train_count=int(count*args.train_size)
-        val_count=int(count*args.val_size)
-        test_count=int(count*args.test_size)
+        train_count=int(count*args.train_size/100)
+        val_count=int(count*args.val_size/100)
+        test_count=int(count*args.test_size/100)
 
 
         train_images=np.append(train_images, images_data[images_data[:,1]==age][:train_count,0])
         val_images=np.append(val_images, images_data[images_data[:,1]==age][train_count:train_count+val_count,0])
         test_images=np.append(test_images, images_data[images_data[:,1]==age][train_count+val_count:,0])
 
+    print("Deleting old images...")
     # remove the old train, val and test images
-    shutil.rmtree(args.trainset_path)
-    shutil.rmtree(args.valset_path)
-    shutil.rmtree(args.testset_path)
+    if os.path.exists(args.trainset_path):
+        shutil.rmtree(args.trainset_path)
+
+    if os.path.exists(args.valset_path):
+        shutil.rmtree(args.valset_path)
+
+    if os.path.exists(args.testset_path):
+        shutil.rmtree(args.testset_path)
     
+    os.mkdir(args.trainset_path)
+    os.mkdir(args.valset_path)
+    os.mkdir(args.testset_path)
+
+    print("Saving images...")
     # save the train and test images
     for image in train_images:
         shutil.copy(image, args.trainset_path+'\\'+image.split('\\')[-1])
