@@ -6,6 +6,8 @@ class Solver():
     def __init__(self, train_loader, test_loader, device, model, writer, args):
         self.args = args
 
+        self.model_path=os.path.join(self.args.checkpoint_path,self.args.run_name)
+
         self.epochs = args.epochs
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -37,11 +39,12 @@ class Solver():
 
     def save_model(self, epoch,iteration):
         # if you want to save the model
-        if not os.path.exists(self.args.checkpoint_path):
-            os.mkdir(self.args.checkpoint_path)
+
+        os.makedirs(self.model_path, exist_ok=True)
+
         
         # save the model with the name of the class and the epoch and iteration
-        path = os.path.join(self.args.checkpoint_path, 
+        path = os.path.join(self.model_path, 
                                     self.model.__class__.__name__ +"_"+str(epoch)+"_"+str(iteration)+".pth")
 
         torch.save(self.model.state_dict(), path)
@@ -49,13 +52,13 @@ class Solver():
 
     def load_model(self):
         # function to load the model
-        if not os.path.exists(self.args.checkpoint_path):
+        if not os.path.exists(self.model_path):
             raise "No checkpoint found!"
 
-        if self.args.checkpoint_path[-1] == '/':
-            self.args.checkpoint_path = self.args.checkpoint_path[:-1]
+        # if self.model_path[-1] == '/':
+        #     self.model_path = self.args.checkpoint_path[:-1]
         
-        saved_models= glob.glob(self.args.checkpoint_path + '/*.pth')
+        saved_models= glob.glob(self.args.checkpoint_path + '*.pth')
 
         if len(saved_models) == 0:
             raise "No model found!"
@@ -63,8 +66,12 @@ class Solver():
         # get the last model saved in the folder
         last_model= max(saved_models, key=os.path.getctime)
 
+        epoch, iteration = last_model.split("_")[-2:]
+
         self.model.load_state_dict(torch.load(last_model))
         print("Model loaded!")
+
+        return epoch, iteration
 
 
     def train(self):
@@ -142,10 +149,23 @@ class Solver():
         
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
-    def predict(self,x):
+
+    def test(self):
+        print("Testing...")
         self.model.eval()
+
+        running_loss = 0.0
+        accuracy = 0.0
         with torch.no_grad():
-            x = x.to(self.device)
-            output = self.model(x)
-            return output
+            for i, (x, y) in enumerate(self.test_loader,0):
+                x = x.to(self.device)
+                y = y.to(self.device)
+
+                output = self.model(x)
+                loss = self.criterion(output, y)
+
+                running_loss+= loss.item()
+                accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
+        
+        return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
