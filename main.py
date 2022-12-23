@@ -5,7 +5,6 @@ import argparse, configparser
 
 
 from torch.utils.tensorboard import SummaryWriter
-#TODO Fix this
 from Dataset.UTKDataset import UTKDataset
 from Solver.Solver import Solver
 from torch.utils.data import DataLoader
@@ -94,6 +93,7 @@ def main(args):
     else:
         train_model(args)
 
+
 def test_model(args):
     writer=SummaryWriter('./runs/test/' + args.run_name)
 
@@ -127,8 +127,8 @@ def train_model(args):
     validation_dataset=UTKDataset(root_dir=args.validation_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.validation_size)
     test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
 
-    utility.display_dataset_info(train_dataset, 5, 10,prefix="train")
-    utility.display_dataset_info(test_dataset, 5, 10,prefix="test")
+    utility.display_dataset_info(writer, train_dataset, 5, 10,prefix="train")
+    utility.display_dataset_info(writer, test_dataset, 5, 10,prefix="test")
 
     
     # Create the dataloaders
@@ -168,11 +168,11 @@ def get_transform(disable_norm):
         ])
 
 
-
 def choose_model(args):
     if args.model == 'SiameseResNet':
         get_resnet_model(args)
         return SiameseResNet(hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+
 
 def get_resnet_model(args):
     if args.resnet_type == 'resnet18':

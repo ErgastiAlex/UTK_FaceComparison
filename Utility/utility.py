@@ -2,21 +2,18 @@ import torch
 import torchvision
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
+import matplotlib.pyplot as plt
 
-def display_dataset_info(dataset, nrow, n_images,prefix=""):
+def display_dataset_info(writer, dataset, nrow, n_images,prefix=""):
     """
     Display some images from the dataset and distribution of the ages in the dataset
     """
-
-    writer=SummaryWriter(f'./runs/{prefix}_images')
     writer.add_text(f"{prefix} dataset size", str(len(dataset)))
 
 
     show_dataset_image_example(dataset, nrow, n_images, writer)
     show_dataset_statistics(dataset, writer)
 
-
-    writer.close()
 
 def show_dataset_statistics(dataset, writer):
     """
@@ -29,6 +26,7 @@ def show_dataset_statistics(dataset, writer):
 
     writer.add_histogram('Ages', ages, bins="auto")
     writer.add_histogram('Ages difference', ages_diff, bins="auto")
+    writer.flush()
 
 def show_dataset_image_example(dataset, nrow, n_images, writer):
     """
@@ -62,6 +60,7 @@ def add_model_info_to_tensorboard(writer, args, model):
     writer.add_graph(model,torch.rand(1,2,3,224,224))
 
     writer.flush()
+
 
 
 def denorm(x):
