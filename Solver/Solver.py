@@ -122,7 +122,7 @@ class Solver():
             # Early stopping 
             evalutation_loss, evaluation_accuracy= self.evaluate()
 
-            self.__plot_tsne(epoch)
+            # self.__plot_tsne(epoch)
 
             self.writer.add_scalar("Loss/eval",evalutation_loss,epoch)
             self.writer.add_scalar("Accuracy/eval",evaluation_accuracy,epoch)
