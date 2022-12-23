@@ -12,7 +12,9 @@ def display_dataset_info(writer, dataset, nrow, n_images,prefix=""):
 
 
     show_dataset_image_example(dataset, nrow, n_images, writer)
-    show_dataset_statistics(dataset, writer)
+
+    # Commented out for problemns on HPC
+    # show_dataset_statistics(dataset, writer)
 
 
 def show_dataset_statistics(dataset, writer):
@@ -21,8 +23,8 @@ def show_dataset_statistics(dataset, writer):
     """
 
     # Get the ages and the ages difference and display them
-    ages=np.array(dataset.get_ages())
-    ages_diff=np.array(dataset.get_ages_diff())
+    ages=np.array(dataset.get_ages(), dtype=np.int32).flatten()
+    ages_diff=np.array(dataset.get_ages_diff(),dtype=np.int32).flatten()
 
     writer.add_histogram('Ages', ages, bins="auto")
     writer.add_histogram('Ages difference', ages_diff, bins="auto")
