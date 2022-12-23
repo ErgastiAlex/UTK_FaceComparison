@@ -10,6 +10,7 @@ from Solver.Solver import Solver
 from torch.utils.data import DataLoader
 from Model.SiameseResNet import SiameseResNet
 import Utility.utility as utility
+from localconfig import config
 
 import numpy as np
 
@@ -75,11 +76,13 @@ def get_args():
     args=parser.parse_args()
 
     if args.config:
-        config = configparser.ConfigParser()
+        # config = configparser.ConfigParser()
         config.read(args.config)
 
         defaults = {}
         defaults.update(dict(config.items("Defaults")))
+        if "hidden_layers" in defaults:
+          defaults["hidden_layers"] = [int(x) for x in defaults["hidden_layers"].split(" ")]
         parser.set_defaults(**defaults)
         args = parser.parse_args() # Overwrite arguments
 
