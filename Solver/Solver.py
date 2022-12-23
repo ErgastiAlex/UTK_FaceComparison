@@ -21,8 +21,11 @@ class Solver():
         self.tsne=TSNE(n_components=2)
 
 
+        self.resume_epoch=0
+        self.resume_iteration=0
         if args.resume_train:
-            self.load_model()
+            self.resume_epoch,self.resume_iteration=self.load_model()
+            print("Model loaded! Resuming training from epoch: ",self.resume_epoch," iteration: ",self.resume_iteration)
 
 
         if args.criterion == "BCELoss":
@@ -58,10 +61,10 @@ class Solver():
         if not os.path.exists(self.model_path):
             raise "No checkpoint found!"
 
-        # if self.model_path[-1] == '/':
-        #     self.model_path = self.args.checkpoint_path[:-1]
+        if self.model_path[-1] == '/':
+            self.model_path = self.model_path
         
-        saved_models= glob.glob(self.args.checkpoint_path + '*.pth')
+        saved_models= glob.glob(self.model_path + '/*.pth')
 
         if len(saved_models) == 0:
             raise "No model found!"
@@ -70,11 +73,12 @@ class Solver():
         last_model= max(saved_models, key=os.path.getctime)
 
         epoch, iteration = last_model.split("_")[-2:]
+        iteration=iteration.split(".")[0]
 
         self.model.load_state_dict(torch.load(last_model))
         print("Model loaded!")
 
-        return epoch, iteration
+        return int(epoch), int(iteration)
 
 
     def train(self):
@@ -82,12 +86,18 @@ class Solver():
 
         evalutation_best_performance = 100000
 
-        for epoch in range(self.epochs):
+        for epoch in range(self.resume_epoch,self.epochs):
             self.model.train()
             running_loss = 0.0
             accuracy = 0.0
 
             for i, (x, y) in enumerate(self.train_loader,0):
+
+                # if we are resuming the training we skip the iterations that we already did
+                if (i < self.resume_iteration and epoch == self.resume_epoch):
+                    print("Skipping iteration: ",i," epoch: ",epoch)
+                    continue
+
                 x = x.to(self.device)
                 y = y.to(self.device)
 
