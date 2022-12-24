@@ -10,6 +10,7 @@ from Solver.Solver import Solver
 from Solver.AutoSolver import AutoSolver
 from torch.utils.data import DataLoader
 from Model.SiameseResNet import SiameseResNet
+from Model.ResNetClassifier import ResNetClassifier
 import Utility.utility as utility
 from localconfig import config
 
@@ -32,7 +33,7 @@ def get_args():
 
 
     # Model 
-    parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet'], help='model used')
+    parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet','ResNetClassifier'], help='model used')
 
     parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'], help='resnet type used for the model')
     parser.add_argument('--hidden_layers',nargs='+',default=[], help='hidden layers of the model, currently only for SiameseResNet')
@@ -185,6 +186,9 @@ def get_transform(disable_norm):
 def get_model_class(args):
     if args.model == 'SiameseResNet':
         return SiameseResNet
+    elif args.model == 'ResNetClassfier':
+        return ResNetClassifier
+
 
 
 def get_resnet_class(args):
