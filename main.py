@@ -7,7 +7,7 @@ import argparse, configparser
 from torch.utils.tensorboard import SummaryWriter
 from Dataset.UTKDataset import UTKDataset
 from Solver.Solver import Solver
-from Solver.AutoSolver import AutoSolver
+
 from torch.utils.data import DataLoader
 from Model.SiameseResNet import SiameseResNet
 from Model.ResNetClassifier import ResNetClassifier
@@ -163,6 +163,8 @@ def train_model(args):
 
         writer.close()
     else:
+        # Add AutoSolver only if used, it requires additional libraries
+        from Solver.AutoSolver import AutoSolver
         solver=AutoSolver(train_dataset,validation_dataset,test_dataset,model_class,writer,args)
         solver.start_search()
 
