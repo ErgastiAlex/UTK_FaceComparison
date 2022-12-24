@@ -7,6 +7,7 @@ import argparse, configparser
 from torch.utils.tensorboard import SummaryWriter
 from Dataset.UTKDataset import UTKDataset
 from Solver.Solver import Solver
+from Solver.AutoSolver import AutoSolver
 from torch.utils.data import DataLoader
 from Model.SiameseResNet import SiameseResNet
 import Utility.utility as utility
@@ -32,6 +33,7 @@ def get_args():
 
     # Model 
     parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet'], help='model used')
+
     parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'], help='resnet type used for the model')
     parser.add_argument('--hidden_layers',nargs='+',default=[], help='hidden layers of the model, currently only for SiameseResNet')
     parser.add_argument('--use_dropout', action='store_true', help='use dropout for the model')
@@ -46,9 +48,9 @@ def get_args():
 
     parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay for the optimizer')
 
-    #TODO implement automatic hyperparameter tuning
     # Automatic hyperparameter tuning
-    parser.add_argument('--autotune', action='store_true', help='enable automatic hyperparameter tuning')
+    parser.add_argument('--autotune', action='store_true', help='enable automatic hyperparameter tuning, other hyperparameters will be ignored\n'+
+                                                                'autotune will tune the following hyperparameters: lr, weight_decay, dropout_p, hidden_layers, resnet_type')
 
     parser.add_argument('--disable_norm', action='store_true', help="disable normalization of the images")
 
@@ -112,7 +114,10 @@ def test_model(args):
     print("Using device: ")
     print(device)
 
-    model=choose_model(args)
+    model_class=get_model_class(args)
+
+    resnet_class=get_resnet_class(args)
+    model=model_class(resnet_type=resnet_class, resnet_hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
 
     solver=Solver(None,test_loader,device,model,writer,args)
     solver.load_model()
@@ -133,51 +138,56 @@ def train_model(args):
     utility.display_dataset_info(writer, train_dataset, 5, 10,prefix="train")
     utility.display_dataset_info(writer, test_dataset, 5, 10,prefix="test")
 
-    
-    # Create the dataloaders
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
-    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+    model_class=get_model_class(args)
 
 
-    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("Using device: ")
-    print(device)
+    if args.autotune==False:       
+        # Create the dataloaders
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
+        validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
 
 
-    model=choose_model(args)
+        device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        print("Using device: ")
+        print(device)
 
-    if args.autotune==False:
+        resnet_class=get_resnet_class(args)
+        model=model_class(resnet_type=resnet_class, hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+
         utility.add_model_info_to_tensorboard(writer, args, model)
 
         solver= Solver(train_loader,validation_loader,device,SiameseResNet(),writer,args)
 
         solver.train()
 
-    writer.close()
+        writer.close()
+    else:
+        solver=AutoSolver(train_dataset,validation_dataset,test_dataset,model_class,writer,args)
+        solver.start_search()
+
+
 
 
 def get_transform(disable_norm):
     if disable_norm:
         return transforms.Compose([
-            # transforms.Resize((224,224)), #We don't need resize thanks to AdaptiveAvgPool2d
+            transforms.Resize((224,224)), 
             transforms.ToTensor()
         ])
     else:
         return transforms.Compose([
-            # transforms.Resize((224,224)),
+            transforms.Resize((224,224)),
             transforms.ToTensor(),
             transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
         ])
 
 
-def choose_model(args):
+def get_model_class(args):
     if args.model == 'SiameseResNet':
-        get_resnet_model(args)
-        return SiameseResNet(hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+        return SiameseResNet
 
 
-def get_resnet_model(args):
+def get_resnet_class(args):
     if args.resnet_type == 'resnet18':
         return models.resnet18
     elif args.resnet_type == 'resnet34':
