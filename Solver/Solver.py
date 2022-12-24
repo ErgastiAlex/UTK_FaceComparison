@@ -1,10 +1,10 @@
 import torch
 import os
 import glob
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 class Solver():
+    """Solver for training and testing a model with parameters defined by the user in the config file."""
     def __init__(self, train_loader, test_loader, device, model, writer, args):
         self.args = args
 
@@ -18,7 +18,6 @@ class Solver():
         
         self.device = device
         self.model.to(self.device)
-        self.tsne=TSNE(n_components=2)
 
 
         self.resume_epoch=0
@@ -36,7 +35,7 @@ class Solver():
         if args.opt == "Adam":
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         elif args.optimizer == "SGD":
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=args.lr)
+            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=args.lr,weight_decay=args.weight_decay)
 
 
         self.writer = writer
@@ -84,7 +83,8 @@ class Solver():
     def train(self):
         print("Training...")
 
-        evalutation_best_performance = 100000
+        evalutation_best_loss = 100000
+        evalutation_best_accuracy= -1
 
         for epoch in range(self.resume_epoch,self.epochs):
             self.model.train()
@@ -94,7 +94,7 @@ class Solver():
             for i, (x, y) in enumerate(self.train_loader,0):
 
                 # if we are resuming the training we skip the iterations that we already did
-                if (i < self.resume_iteration and epoch == self.resume_epoch):
+                if (i <= self.resume_iteration and epoch == self.resume_epoch):
                     print("Skipping iteration: ",i," epoch: ",epoch)
                     continue
 
@@ -114,8 +114,6 @@ class Solver():
                 accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
 
 
-                #TODO add PR curve
-
                 if i % self.args.print_every == self.args.print_every-1:  # print statistics, average loss over the last print_every mini-batches
                    
                     self.writer.add_scalar("Loss/train",running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
@@ -132,18 +130,23 @@ class Solver():
             # Early stopping 
             evalutation_loss, evaluation_accuracy= self.evaluate()
 
-            # self.__plot_tsne(epoch)
 
             self.writer.add_scalar("Loss/eval",evalutation_loss,epoch)
             self.writer.add_scalar("Accuracy/eval",evaluation_accuracy,epoch)
 
             # For early stopping we use the loss on the validation set not the accuracy
-            if evalutation_loss < evalutation_best_performance:
-                evalutation_best_performance = evalutation_loss
+            if evalutation_loss < evalutation_best_loss:
+                evalutation_best_loss = evalutation_loss
+                evalutation_best_accuracy = evaluation_accuracy
+                # Save only the best model
                 self.save_model(epoch, len(self.train_loader))
             else:
-                print("The model did not improve and has started to overfit, the best performance was: {}".format(evalutation_best_performance))
+                print("The model did not improve and has started to overfit, the best performances are with loss of: {}  and accuracy of: {}".format(evalutation_best_loss, evalutation_best_accuracy))
                 break
+        
+        # Load the best model
+        self.load_model()
+        self.test()
 
     def evaluate(self):
         print("Evaluating...")
@@ -184,28 +187,17 @@ class Solver():
                 accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
 
         
+        print("Test loss: {}, Test accuracy: {}".format(running_loss / len(self.test_loader), accuracy / len(self.test_loader)))
+
+        self.writer.add_text("Test loss", running_loss / len(self.test_loader))
+        self.writer.add_text("Test accuracy", accuracy / len(self.test_loader))
+
+
+        output = self.model(x)
+        output = torch.gt(output,0.5).int()
+
+
+
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
-    def __plot_tsne(self,epoch):
-        self.model.eval()
-
-
-        with torch.no_grad():
-            (x,y) = next(iter(self.test_loader))
-
-            x = x.to(self.device)
-            y = y.to(self.device)
-
-            feature_map1, feature_map2 = self.model.get_feature_map(x)
-
-            feature_map=torch.cat((feature_map1,feature_map2),1)
-
-            tsne=self.tsne.fit_transform(feature_map.cpu().numpy())
-            tx=tsne[:,0]
-            ty=tsne[:,1]
-
-            plt.scatter(tx, ty, c=y.cpu().numpy(), s=20, cmap=plt.cm.Spectral)
-
-            self.writer.add_figure("TSNE",plt.gcf(),epoch)
-            self.writer.flush()
             
