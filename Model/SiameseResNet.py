@@ -12,6 +12,7 @@ class SiameseResNet(torch.nn.Module):
 
         feature_map_dim=2*temporal_resnet.fc.in_features
 
+        fc_layers=[]
 
         if len(hidden_layers)!=0:
             fc_layers=[torch.nn.Linear(feature_map_dim,hidden_layers[0],bias=True)]
@@ -33,22 +34,14 @@ class SiameseResNet(torch.nn.Module):
             fc_layers=[torch.nn.Linear(feature_map_dim,1,bias=True)]
             fc_layers.append(torch.nn.Sigmoid())
 
-        
         self.fc=torch.nn.Sequential(*fc_layers)
 
 
     def forward(self, x):
-        feature_map1,feature_map2=self.get_feature_map(x) # [x, 2048] [x, 2048]
-        
-        feature_map=torch.cat((feature_map1,feature_map2),1) # [x, 2048] [x, 2048] -> [x, 4096]
+        img1,img2=torch.split(x,1,1) # [x, 2, 3, h, w] -> [x, 1, 3,h, w] [x, 1, 3,h, w]
 
-        return self.fc(feature_map)
-
-    def get_feature_map(self,x):
-        img1,img2=torch.split(x,1,1) # [x, 2, 3, 200, 200] -> [x, 1, 3, 200, 200] [x, 1, 3, 200, 200]
-
-        img1=img1.squeeze(1) # [x, 1, 3, 200, 200] -> [x, 3, 200, 200]
-        img2=img2.squeeze(1) # [x, 1, 3, 200, 200] -> [x, 3, 200, 200]
+        img1=img1.squeeze(1) # [x, 1, 3, h, w] -> [x, 3, h, w]
+        img2=img2.squeeze(1) # [x, 1, 3, h, w] -> [x, 3, h, w]
 
         feature_map1=self.resnet_1(img1)
         feature_map1=feature_map1.view(feature_map1.size(0), -1) # [x, 2048, 1, 1] -> [x, 2048]
@@ -56,12 +49,14 @@ class SiameseResNet(torch.nn.Module):
         feature_map2=self.resnet_1(img2)
         feature_map2=feature_map2.view(feature_map2.size(0), -1) # [x, 2048, 1, 1] -> [x, 2048]
 
-        return feature_map1,feature_map2
+        feature_map=torch.cat((feature_map1,feature_map2),1) # [x, 2048] [x, 2048] -> [x, 4096]
+
+        return self.fc(feature_map)
 
 
 
 def main():
-    m=SiameseResNet(hidden_layers=[100,100])
+    m=SiameseResNet(hidden_layers=[],resnet_type=models.resnet18,use_dropout=False,dropout_p=0.5)
     print(m)
 
 
