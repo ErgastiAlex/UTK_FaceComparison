@@ -37,7 +37,7 @@ def get_args():
 
 
     #Model parameters
-    parser.add_argument('--lr', type=int, default=0.001, help='learning rate')
+    parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
     parser.add_argument('--opt', type=str, default='Adam', choices=['SGD', 'Adam'], help = 'optimizer used for training')
     parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay for the optimizer')
 
