@@ -2,6 +2,7 @@ import torch
 import os
 import glob
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 class Solver():
     """Solver for training and testing a model with parameters defined by the user in the config file."""
@@ -20,8 +21,8 @@ class Solver():
         self.model.to(self.device)
 
 
-        self.resume_epoch=0
-        self.resume_iteration=0
+        self.resume_epoch=-1
+        self.resume_iteration=-1
         if args.resume_train:
             self.resume_epoch,self.resume_iteration=self.load_model()
             print("Model loaded! Resuming training from epoch: ",self.resume_epoch," iteration: ",self.resume_iteration)
@@ -119,6 +120,10 @@ class Solver():
                     self.writer.add_scalar("Loss/train",running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
                     self.writer.add_scalar("Accuracy/train",accuracy / self.args.print_every, epoch * len(self.train_loader) + i)
 
+                    # self.writer('Gradients',
+                    #         add_gradient_hist(self.model),
+                    #         global_step=epoch * len(trainloader) + i))
+
                     print("Epoch: {}, Iteration: {}, Loss: {}, Accuracy: {}".format(epoch, i, running_loss / self.args.print_every, accuracy / self.args.print_every))
                     running_loss = 0.0
                     accuracy = 0.0
@@ -147,6 +152,38 @@ class Solver():
         # Load the best model
         self.load_model()
         self.test()
+
+    def add_gradient_hist(net):
+        ave_grads = [] 
+        layers = []
+        for n,p in net.named_parameters():
+            if ("bias" not in n):
+                layers.append(n)
+                if p.requires_grad: 
+                    ave_grad = np.abs(p.grad.clone().detach().cpu().numpy()).mean()
+                else:
+                    ave_grad = 0
+                ave_grads.append(ave_grad)
+
+        layers = [layers[i].replace(".weight", "") for i in range(len(layers))]
+
+        fig = plt.figure(figsize=(12, 12))
+        plt.bar(np.arange(len(ave_grads)), ave_grads, lw=1, color="b")
+        plt.hlines(0, 0, len(ave_grads) + 1, lw=2, color="k")
+        plt.xticks(range(0, len(ave_grads), 1), layers, rotation=90)
+        plt.xlim(left=0, right=len(ave_grads))
+        plt.ylim(bottom=-0.001, top=np.max(ave_grads) / 2)  # zoom in on the lower gradient regions
+        plt.xlabel("Layers")
+        plt.ylabel("average gradient")
+        plt.title("Gradient flow")
+        #plt.grid(True)
+        plt.legend([Line2D([0], [0], color="b", lw=4),
+                    Line2D([0], [0], color="k", lw=4)], ['mean-gradient', 'zero-gradient'])
+        plt.tight_layout()
+        #plt.show()
+
+        return fig
+
 
     def evaluate(self):
         print("Evaluating...")
