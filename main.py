@@ -122,7 +122,7 @@ def test_model(args):
 
     solver=Solver(None,test_loader,device,model,writer,args)
     solver.load_model()
-    solver.test()
+    solver.evaluate(True)
 
 
 def train_model(args):
@@ -211,5 +211,5 @@ def get_resnet_class(args):
 
 if __name__ == "__main__":
     args = get_args()
-    print(args)
+    print(args,flush=True)
     main(args)

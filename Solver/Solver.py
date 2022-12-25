@@ -15,6 +15,8 @@ class Solver():
         self.train_loader = train_loader
         self.test_loader = test_loader
 
+        # Patience for early stopping, ask the user to input it
+        self.patience=5
         self.model = model
         
         self.device = device
@@ -87,6 +89,8 @@ class Solver():
         evalutation_best_loss = 100000
         evalutation_best_accuracy= -1
 
+        patience_counter=0
+
         for epoch in range(self.resume_epoch,self.epochs):
             self.model.train()
             running_loss = 0.0
@@ -143,10 +147,18 @@ class Solver():
             if evalutation_loss < evalutation_best_loss:
                 evalutation_best_loss = evalutation_loss
                 evalutation_best_accuracy = evaluation_accuracy
+
+                patience_counter=0
                 # Save only the best model
                 self.save_model(epoch, len(self.train_loader))
-            else:
+            # Accept a 5% increase in the loss
+            elif evalutation_loss > evalutation_best_loss*1.05:
+                patience_counter+=1
+                # If we have reached the patience we stop the training
+                if patience_counter == self.patience:
+                    break
                 print("The model did not improve and has started to overfit, the best performances are with loss of: {}  and accuracy of: {}".format(evalutation_best_loss, evalutation_best_accuracy))
+            else:
                 break
         
         # Load the best model
@@ -184,30 +196,7 @@ class Solver():
 
         return fig
 
-
-    def evaluate(self):
-        print("Evaluating...")
-        self.model.eval()
-
-        running_loss = 0.0
-        accuracy = 0.0
-        with torch.no_grad():
-            for i, (x, y) in enumerate(self.test_loader,0):
-                x = x.to(self.device)
-                y = y.to(self.device)
-
-                output = self.model(x)
-                loss = self.criterion(output, y)
-
-                running_loss+= loss.item()
-                accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
-                
-        
-        return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
-
-
-    #TODO remove test and use evaluate!
-    def test(self):
+    def evaluate(self, write_to_tensorboard=False):
         print("Testing...")
         self.model.eval()
 
@@ -227,14 +216,9 @@ class Solver():
         
         print("Test loss: {}, Test accuracy: {}".format(running_loss / len(self.test_loader), accuracy / len(self.test_loader)))
 
-        self.writer.add_text("Test loss", running_loss / len(self.test_loader))
-        self.writer.add_text("Test accuracy", accuracy / len(self.test_loader))
-
-
-        output = self.model(x)
-        output = torch.gt(output,0.5).int()
-
-
+        if write_to_tensorboard:
+            self.writer.add_text("Test loss", running_loss / len(self.test_loader))
+            self.writer.add_text("Test accuracy", accuracy / len(self.test_loader))
 
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
