@@ -21,7 +21,7 @@ class Solver():
         self.model.to(self.device)
 
 
-        self.resume_epoch=-1
+        self.resume_epoch=0
         self.resume_iteration=-1
         if args.resume_train:
             self.resume_epoch,self.resume_iteration=self.load_model()
@@ -206,6 +206,7 @@ class Solver():
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
 
 
+    #TODO remove test and use evaluate!
     def test(self):
         print("Testing...")
         self.model.eval()
