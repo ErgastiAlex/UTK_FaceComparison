@@ -80,9 +80,8 @@ class UTKAgeDataset(Dataset):
             toTensor=transforms.ToTensor()
             img=toTensor(img)
 
-        
-        
-        return img, torch.tensor(age)
+            
+        return img, torch.tensor(age).unsqueeze(-1).to(torch.float)
         
 
     def __load_image(img_name):
