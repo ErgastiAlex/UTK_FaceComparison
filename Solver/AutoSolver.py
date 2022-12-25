@@ -35,7 +35,7 @@ class AutoSolver():
             "use_dropout": tune.choice([True, False]),
             "dropout_prob": tune.uniform(0.1, 0.7),
             "weight_decay": tune.loguniform(1e-6, 1e-2),
-            "resnet_type": tune.choice([torchvision.models.resnet18, torchvision.models.resnet18, torchvision.models.resnet18])
+            "resnet_type": tune.choice(["resnet18", "resnet50"])
         }
 
     def start_search(self,num_samples=10, max_num_epochs=10, gpus_per_trial=2):   
@@ -78,7 +78,9 @@ class AutoSolver():
     
 
     def __train(self,config):
-        net = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=config["resnet_type"])
+        
+        resnet_type = self.__get_resnet_model(config["resnet_type"])
+        net = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=resnet_type)
 
         device = "cpu"
 
@@ -180,7 +182,9 @@ class AutoSolver():
     def __test_best_model(self,best_result):
         # Load the best model and test it on the test set.
         config=best_result.config
-        best_trained_model = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=config["resnet_type"])
+
+        resnet_type = self.__get_resnet_model(config["resnet_type"])
+        best_trained_model = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=resnet_type)
 
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
         best_trained_model.to(device)
@@ -209,3 +213,10 @@ class AutoSolver():
 
 
         print("Best trial test set accuracy: {}".format(correct / total))
+    
+    def __get_resnet_model(self, resnet_type):
+        if resnet_type == "resnet18":
+            return torchvision.models.resnet18
+        elif resnet_type == "resnet50":
+            return torchvision.models.resnet50
+       
