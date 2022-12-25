@@ -128,7 +128,7 @@ class Solver():
                     #         add_gradient_hist(self.model),
                     #         global_step=epoch * len(trainloader) + i))
 
-                    print("Epoch: {}, Iteration: {}, Loss: {}, Accuracy: {}".format(epoch, i, running_loss / self.args.print_every, accuracy / self.args.print_every))
+                    print("Epoch: {}, Iteration: {}, Loss: {}, Accuracy: {}".format(epoch, i, running_loss / self.args.print_every, accuracy / self.args.print_every), flush=True)
                     running_loss = 0.0
                     accuracy = 0.0
                     
@@ -152,14 +152,13 @@ class Solver():
                 # Save only the best model
                 self.save_model(epoch, len(self.train_loader))
             # Accept a 5% increase in the loss
-            elif evalutation_loss > evalutation_best_loss*1.05:
+            else:
+                print("Model not saved, but keep searching for the best model")
                 patience_counter+=1
                 # If we have reached the patience we stop the training
                 if patience_counter == self.patience:
                     break
-                print("The model did not improve and has started to overfit, the best performances are with loss of: {}  and accuracy of: {}".format(evalutation_best_loss, evalutation_best_accuracy))
-            else:
-                break
+                    print("The model did not improve and has started to overfit, the best performances are with loss of: {}  and accuracy of: {}".format(evalutation_best_loss, evalutation_best_accuracy))
         
         # Load the best model
         self.load_model()
