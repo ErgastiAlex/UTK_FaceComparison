@@ -155,7 +155,7 @@ class Solver():
 
                 evalutation_best_loss = evalutation_loss
                 evalutation_best_accuracy = evaluation_accuracy
-                best_model = copy.deepcopy(self.model.state_dict())
+                best_model = copy.deepcopy(self.model)
 
                 patience_counter=0
                 # Save only the best model
