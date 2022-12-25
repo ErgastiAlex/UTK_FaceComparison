@@ -145,24 +145,26 @@ class Solver():
 
             # For early stopping we use the loss on the validation set not the accuracy
             if evalutation_loss < evalutation_best_loss:
+                print("Better model found, old loss: {}, new loss: {}".format(evalutation_best_loss, evalutation_loss))
+
                 evalutation_best_loss = evalutation_loss
                 evalutation_best_accuracy = evaluation_accuracy
 
                 patience_counter=0
+
                 # Save only the best model
                 self.save_model(epoch, len(self.train_loader))
-            # Accept a 5% increase in the loss
             else:
                 print("Model not saved, but keep searching for the best model")
                 patience_counter+=1
                 # If we have reached the patience we stop the training
                 if patience_counter == self.patience:
-                    break
                     print("The model did not improve and has started to overfit, the best performances are with loss of: {}  and accuracy of: {}".format(evalutation_best_loss, evalutation_best_accuracy))
+                    break
         
         # Load the best model
         self.load_model()
-        self.test()
+        self.evaluate()
 
     def add_gradient_hist(net):
         ave_grads = [] 
