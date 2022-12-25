@@ -3,6 +3,7 @@ import os
 import glob
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+import copy
 
 class Solver():
     """Solver for training and testing a model with parameters defined by the user in the config file."""
@@ -20,6 +21,8 @@ class Solver():
         self.model = model
         
         self.device = device
+        if torch.cuda.device_count() > 1:
+                self.model = torch.nn.DataParallel(self.model) # the module is copied to each GPU and each one handles a portion of the batch
         self.model.to(self.device)
 
 
@@ -88,6 +91,7 @@ class Solver():
 
         evalutation_best_loss = 100000
         evalutation_best_accuracy= -1
+        best_model=None
 
         patience_counter=0
 
@@ -136,6 +140,8 @@ class Solver():
 
                 self.writer.flush()
 
+
+            self.save_model(epoch, len(self.train_loader))
             # Early stopping 
             evalutation_loss, evaluation_accuracy= self.evaluate()
 
@@ -149,21 +155,23 @@ class Solver():
 
                 evalutation_best_loss = evalutation_loss
                 evalutation_best_accuracy = evaluation_accuracy
+                best_model = copy.deepcopy(self.model.state_dict())
 
                 patience_counter=0
-
                 # Save only the best model
-                self.save_model(epoch, len(self.train_loader))
+
             else:
-                print("Model not saved, but keep searching for the best model")
                 patience_counter+=1
+                print(f"Keep searching for the best model, patience counter: {patience_counter}")
                 # If we have reached the patience we stop the training
                 if patience_counter == self.patience:
                     print("The model did not improve and has started to overfit, the best performances are with loss of: {}  and accuracy of: {}".format(evalutation_best_loss, evalutation_best_accuracy))
                     break
         
-        # Load the best model
-        self.load_model()
+        self.model=best_model
+        #Save the best model as the last model
+        self.save_model(self.epochs+1, 0) 
+
         self.evaluate()
 
     def add_gradient_hist(net):
