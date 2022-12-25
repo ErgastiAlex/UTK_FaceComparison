@@ -8,7 +8,7 @@ import re
 import numpy as np
 
 class UTKDataset(Dataset):
-    def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1,  data_size:int = None, duplicate_probability=0, unique_images=False, return_age=False):
+    def __init__(self,  root_dir:str, transform=None, seed:int=42, year_diff:int =1,  data_size:int = None, duplicate_probability=0, unique_images=False):
         """
         Args:
             root_dir (string): Directory with all the images.
@@ -28,7 +28,6 @@ class UTKDataset(Dataset):
         self.data_size=data_size
 
         self.transform = transform
-        self.return_age=return_age
 
         self.files=self.__get_all_images_in_dir(root_dir)
         if(len(self.files)==0):
@@ -253,17 +252,7 @@ class UTKDataset(Dataset):
 
         images=torch.stack((img0,img1),dim=0)
         
-        if self.return_age:
-            ages1=torch.tensor(self.data[idx][3])
-            ages2=torch.tensor(self.data[idx][4])
-
-            ages1=ages1.unsqueeze(-1).to(torch.float32) # [x] -> [x,1] and convert to float32
-            ages2=ages2.unsqueeze(-1).to(torch.float32) # [x] -> [x,1] and convert to float32
-
-
-            return images, labels, ages1, ages2
-        else:
-            return images, labels
+        return images, labels
         
 
     def __load_image(img_name):
@@ -284,7 +273,7 @@ def main():
     import matplotlib.pyplot as plt
     import os
 
-    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, return_age=True,unique_images=True,duplicate_probability=0.5)
+    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, unique_images=True,duplicate_probability=0.5)
     
 
     # Visualize the data
@@ -293,12 +282,12 @@ def main():
 
     for i in range(1, cols * rows + 1):
         sample_idx = torch.randint(len(dataloader), size=(1,)).item()
-        images, label, age1, age2 = dataloader[sample_idx]
+        images, label= dataloader[sample_idx]
         img0=images[0]
         img1=images[1]
 
         figure.add_subplot(rows, cols, i)
-        plt.title(f"Left is older?: {label.item()} \n Age1={age1.item()} Age2={age2.item()}")
+        plt.title(f"Left is older?: {label.item()}")
 
         plt.axis("off")
 
