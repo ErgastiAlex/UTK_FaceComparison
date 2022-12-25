@@ -68,11 +68,11 @@ class AutoSolver():
 
         best_result = results.get_best_result("loss", "min")
 
-        print("Best trial config: {}".format(best_result.config))
+        print("Best trial config: {}".format(best_result.config),flush=True)
         print("Best trial final validation loss: {}".format(
-            best_result.metrics["loss"]))
+            best_result.metrics["loss"]),flush=True)
         print("Best trial final validation accuracy: {}".format(
-            best_result.metrics["accuracy"]))
+            best_result.metrics["accuracy"]),flush=True)
 
         self.__test_best_model(best_result)
     
