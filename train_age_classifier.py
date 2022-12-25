@@ -113,7 +113,7 @@ def train_model(args):
 
     # Load the dataset 
     train_dataset=UTKAgeDataset(root_dir=args.training_set_path, transform=transform)
-    validation_dataset=UTKAgeDataset(root_dir=args.validation_set_path, transform=get_transform)
+    validation_dataset=UTKAgeDataset(root_dir=args.validation_set_path, transform=transform)
 
     
     # Create the dataloaders
