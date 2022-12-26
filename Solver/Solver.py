@@ -235,7 +235,12 @@ class Solver():
                 y_pred=np.append(y_pred,output.cpu().numpy())
                 y_true=np.append(y_true,y.cpu().numpy())
 
-        auc_score=roc_auc_score(y_true,y_pred)
+        auc_score=0
+        try:
+            auc_score=roc_auc_score(y_true,y_pred)
+        except:
+            #not always possible to calculate the AUC
+            pass
         
         print("Test loss: {}, Test accuracy: {} Test AUC: {}".format(running_loss / len(self.test_loader), accuracy / len(self.test_loader), auc_score))
 
