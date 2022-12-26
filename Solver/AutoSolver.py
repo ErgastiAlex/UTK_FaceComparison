@@ -117,8 +117,7 @@ class AutoSolver():
 
         for epoch in range(10):  # loop over the dataset multiple times
             running_loss = 0.0
-            epoch_steps = 0
-
+            
             for i, data in enumerate(trainloader, 0):
                 # get the inputs; data is a list of [inputs, labels]
                 inputs, labels = data
@@ -136,12 +135,12 @@ class AutoSolver():
 
                 # print statistics
                 running_loss += loss.item()
-                epoch_steps += 1
 
                 if i % self.args.print_every == self.args.print_every-1: 
                     print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
-                                                    running_loss / epoch_steps), flush=True)
+                                                    running_loss / self.args.print_every), flush=True)
                     running_loss = 0.0
+
 
             # Validation loss
             val_loss = 0.0
