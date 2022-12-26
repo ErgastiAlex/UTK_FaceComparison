@@ -58,7 +58,10 @@ class Solver():
         path = os.path.join(self.model_path, 
                                     self.model.__class__.__name__ +"_"+str(epoch)+"_"+str(iteration)+".pth")
 
-        torch.save(self.model.state_dict(), path)
+        if torch.cuda.device_count() > 1:
+            torch.save(self.model.module.state_dict(), path)
+        else:
+            torch.save(self.model.state_dict(), path)
         print("Model saved!")
 
     def load_model(self):
@@ -67,7 +70,7 @@ class Solver():
             raise "No checkpoint found!"
 
         if self.model_path[-1] == '/':
-            self.model_path = self.model_path
+            self.model_path = self.model_path[:-1]
         
         saved_models= glob.glob(self.model_path + '/*.pth')
 

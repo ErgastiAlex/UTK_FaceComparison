@@ -53,7 +53,7 @@ class AutoSolver():
         tuner = tune.Tuner(
             tune.with_resources(
                 tune.with_parameters(self.__train),
-                resources={"cpu": 2, "gpu": gpus_per_trial}
+                resources={"cpu": 1, "gpu": gpus_per_trial}
             ),
             tune_config=tune.TuneConfig(
                 metric="loss",
@@ -103,8 +103,6 @@ class AutoSolver():
             net.load_state_dict(model_state)
             optimizer.load_state_dict(optimizer_state)
 
-        data_dir = os.path.abspath("./data")
-
 
         trainloader = torch.utils.data.DataLoader(
             self.trainset,
@@ -143,7 +141,7 @@ class AutoSolver():
 
                 if i % self.args.print_every == self.args.print_every-1: 
                     print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
-                                                    running_loss / epoch_steps))
+                                                    running_loss / epoch_steps), flush=True)
                     running_loss = 0.0
 
             # Validation loss
@@ -171,8 +169,12 @@ class AutoSolver():
             # Ray Tune and can be accessed through `session.get_checkpoint()`
             # API in future iterations.
             os.makedirs(self.model_path, exist_ok=True)
-            torch.save(
-                (net.state_dict(), optimizer.state_dict()), self.model_path+"/checkpoint.pt")
+
+            if torch.cuda.device_count() > 1:
+                # If used multiple GPU, we need to save module's state_dict
+                torch.save((net.module.state_dict(), optimizer.state_dict()), self.model_path+"/checkpoint.pt")
+            else:
+                torch.save((net.state_dict(), optimizer.state_dict()), self.model_path+"/checkpoint.pt")
 
             checkpoint = Checkpoint.from_directory(self.model_path)
             session.report({"loss": (val_loss / val_steps), "accuracy": correct / total}, checkpoint=checkpoint)
