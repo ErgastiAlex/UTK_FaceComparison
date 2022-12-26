@@ -9,6 +9,7 @@ import torchvision.transforms as transforms
 from Model.SiameseResNet import SiameseResNet
 from Model.ResNetClassifier import ResNetClassifier
 from Model.SiameseResNetAge import SiameseResNetAge
+from Model.ResNetAgeClassifier import ResNetAgeClassifier
 from torchvision import models
 
 def get_transform(disable_norm):
@@ -39,7 +40,6 @@ def get_model(args):
         return model
     else:
         raise Exception("Invalid model")
-
 
 
 def get_model_class(args):
