@@ -17,7 +17,7 @@ from ray.tune.schedulers import ASHAScheduler
 class AutoSolver():
     """Solver for find the best hyperparameters for the model, automatically."""
 
-    def __init__(self, training_set, test_set,val_set , model_class, writer, args):
+    def __init__(self, training_set, val_set, test_set, model_class, writer, args):
         
         self.args = args
         self.model_path=os.path.join(args.checkpoint_path,args.run_name)
@@ -92,7 +92,7 @@ class AutoSolver():
         net.to(device)
 
         criterion = nn.BCELoss()
-        optimizer = optim.Adam(net.parameters(), lr=config["lr"])
+        optimizer = optim.Adam(net.parameters(), lr=config["lr"],weight_decay=config["weight_decay"])
 
         # To restore a checkpoint, use `session.get_checkpoint()`.
         loaded_checkpoint = session.get_checkpoint()
