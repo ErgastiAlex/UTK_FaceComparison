@@ -1,3 +1,5 @@
+# Project Assignment
+
 A.A. 2022/2023
 Deep Learning and Generative Models
 Project assignment #6
@@ -26,7 +28,7 @@ Project assignment #6
 
 - Two images can be concatenated in the channel dimension to form a single tensor
 
-# Project description
+# Project solution
 
 ## Dataset
 
