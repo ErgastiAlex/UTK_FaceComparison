@@ -35,7 +35,7 @@ def get_args():
     # Model 
     parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'], help='resnet type used for the model')
 
-
+    parser.add_argument('--patience', type=int, default=5, help='patience for the early stopping')
     #Model parameters
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
     parser.add_argument('--opt', type=str, default='Adam', choices=['SGD', 'Adam'], help = 'optimizer used for training')
