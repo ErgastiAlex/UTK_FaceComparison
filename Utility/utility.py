@@ -28,7 +28,7 @@ def get_transform(disable_norm):
 
 def get_model(args):
     """Returns the model based on the args"""
-    resnet_type=get_resnet_class(args)
+    resnet_type=get_resnet_class(args.resnet_type)
     if args.model == 'SiameseResNet':
         return SiameseResNet(resnet_type=resnet_type,hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
     elif args.model == 'ResNetClassifier':
