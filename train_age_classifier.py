@@ -98,8 +98,8 @@ def test_model(args):
     print("Using device: ")
     print(device)
 
-
-    model=ResNetAgeClassifier()
+    resnet_class=utility.get_resnet_class(args)
+    model=ResNetAgeClassifier(resnet_type=resnet_class)
 
     solver=Solver(None,test_loader,device,model,writer,args)
     solver.load_model()
@@ -125,7 +125,7 @@ def train_model(args):
     print("Using device: ")
     print(device)
 
-    resnet_class=get_resnet_class(args)
+    resnet_class=utility.get_resnet_class(args)
     model=ResNetAgeClassifier(resnet_type=resnet_class)
 
     solver=Solver(train_loader,validation_loader,device,model,writer,args)
@@ -150,20 +150,6 @@ def get_transform(disable_norm):
             transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
         ])
 
-
-def get_resnet_class(args):
-    if args.resnet_type == 'resnet18':
-        return models.resnet18
-    elif args.resnet_type == 'resnet34':
-        return models.resnet34
-    elif args.resnet_type == 'resnet50':
-        return models.resnet50
-    elif args.resnet_type == 'resnet101':
-        return models.resnet101
-    elif args.resnet_type == 'resnet152':
-        return models.resnet152
-    else:
-        raise Exception("Invalid resnet model")
 
 
 
