@@ -188,7 +188,7 @@ def get_transform(disable_norm):
 def get_model_class(args):
     if args.model == 'SiameseResNet':
         return SiameseResNet
-    elif args.model == 'ResNetClassfier':
+    elif args.model == 'ResNetClassifier':
         return ResNetClassifier
 
 
