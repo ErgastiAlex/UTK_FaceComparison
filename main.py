@@ -125,7 +125,6 @@ def train_model(writer,args):
         print(device)
 
         model=utility.get_model(args)
-        print(model)
 
         utility.add_model_info_to_tensorboard(writer, args, model)
 
