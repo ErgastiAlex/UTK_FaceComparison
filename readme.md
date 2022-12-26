@@ -52,7 +52,7 @@ The UTKDataset is higly configurable with this input parameters:
 - `duplicate_probability` is the probability of duplicating a combination of images by switching the order. The duplication will result in a dataset that is larger by a factor of 1 | duplicate_probability.
 - `unique_images` is a boolean indicating whether or not to use each image only once in the dataset.
 
-TODO: Add some prouf
+TODO: Add some proof
 
 The model proposed are trained with:
 
@@ -92,7 +92,11 @@ training_set, test_set,val_set , model_class, writer, args
 
 ## SiameseResNet
 
+This model consists of two identical ResNet use to extract a feature map from each image, the feature map are then flatten, concatenated and passed to a FC layers to classify if the left image is older or not.
+
 ## ResNetClassifier
+
+This model consists of a ResNet that takes as an input a image with 6 channels, this image is composed of the two images concatenated along the channel axis, at the end of the resnet there are FC layers to classifyt if the left image is older or not.
 
 # Ablation Experiment
 
