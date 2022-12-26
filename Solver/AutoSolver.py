@@ -5,14 +5,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-import torchvision
 from sklearn.metrics import roc_auc_score
+import Utility.utility as utility
 
 import ray
 from ray import tune
 from ray.air import session
 from ray.air.checkpoint import Checkpoint
 from ray.tune.schedulers import ASHAScheduler
+
 
 class AutoSolver():
     """Solver for find the best hyperparameters for the model, automatically."""
@@ -78,7 +79,7 @@ class AutoSolver():
 
     def __train(self,config):
         
-        resnet_type = self.__get_resnet_model(config["resnet_type"])
+        resnet_type = utility.get_resnet_class(config["resnet_type"])
         net = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=resnet_type)
 
         device = "cpu"
@@ -193,7 +194,7 @@ class AutoSolver():
         # Load the best model and test it on the test set.
         config=best_result.config
 
-        resnet_type = self.__get_resnet_model(config["resnet_type"])
+        resnet_type = utility.get_resnet_class(config["resnet_type"])
         best_trained_model = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=resnet_type)
 
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -235,9 +236,4 @@ class AutoSolver():
 
         print("Best trial test set accuracy: {}, AUC_score: {}".format(correct / total, auc_score))
     
-    def __get_resnet_model(self, resnet_type):
-        if resnet_type == "resnet18":
-            return torchvision.models.resnet18
-        elif resnet_type == "resnet50":
-            return torchvision.models.resnet50
        

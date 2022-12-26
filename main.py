@@ -30,9 +30,9 @@ def get_args():
 
 
     # Model 
-    parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet','ResNetClassifier'], help='model used')
+    parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet','ResNetClassifier','SiameseResNetAge'], help='model used')
 
-    parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'], help='resnet type used for the model')
+    parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18','resnet50'], help='resnet type used for the model')
     parser.add_argument('--hidden_layers',nargs='+',default=[], help='hidden layers of the model, currently only for SiameseResNet')
     parser.add_argument('--use_dropout', action='store_true', help='use dropout for the model')
     parser.add_argument('--dropout_p', type=float, default=0.5, help='dropout rate for the model')
@@ -112,24 +112,20 @@ def train_model(writer,args):
     test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
 
     utility.display_dataset_info(writer, train_dataset, 5, 10,prefix="train")
+    utility.display_dataset_info(writer, validation_dataset, 5, 10,prefix="validation")
     utility.display_dataset_info(writer, test_dataset, 5, 10,prefix="test")
-
-    model_class=utility.get_model_class(args)
-
 
     if args.autotune==False:       
         # Create the dataloaders
         train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
         validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
 
-
         device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         print("Using device: ")
         print(device)
 
-        resnet_class=utility.get_resnet_class(args)
-
-        model=model_class(resnet_type=resnet_class, hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+        model=utility.get_model(args)
+        print(model)
 
         utility.add_model_info_to_tensorboard(writer, args, model)
 
@@ -141,6 +137,9 @@ def train_model(writer,args):
     else:
         # Add AutoSolver only if used, it requires additional libraries
         from Solver.AutoSolver import AutoSolver
+
+        model_class=utility.get_model_class(args)
+
         solver=AutoSolver(train_dataset,validation_dataset,test_dataset,model_class,writer,args)
         solver.start_search(num_samples=args.num_samples, max_num_epochs=args.max_num_epochs, gpus_per_trial=args.gpus_per_trial)
 
@@ -158,10 +157,7 @@ def test_model(writer,args):
     print("Using device: ")
     print(device)
 
-    model_class=utility.get_model_class(args)
-
-    resnet_class=utility.get_resnet_class(args)
-    model=model_class(resnet_type=resnet_class, hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+    model=utility.get_model(args)
 
     solver=Solver(None,test_loader,device,model,writer,args)
     solver.load_model()

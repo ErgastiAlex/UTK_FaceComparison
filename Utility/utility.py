@@ -1,11 +1,14 @@
 import torch
 import torchvision
+import os
+import glob
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 from Model.SiameseResNet import SiameseResNet
 from Model.ResNetClassifier import ResNetClassifier
+from Model.SiameseResNetAge import SiameseResNetAge
 from torchvision import models
 
 def get_transform(disable_norm):
@@ -23,25 +26,38 @@ def get_transform(disable_norm):
         ])
 
 
+def get_model(args):
+    """Returns the model based on the args"""
+    resnet_type=get_resnet_class(args)
+    if args.model == 'SiameseResNet':
+        return SiameseResNet(resnet_type=resnet_type,hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+    elif args.model == 'ResNetClassifier':
+        return ResNetClassifier(resnet_type=resnet_type,hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+    elif args.model =='SiameseResNetAge':
+        model= SiameseResNetAge(resnet_type=resnet_type,hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+        model.load_model(args.checkpoint_path,args.resnet_type)
+        return model
+    else:
+        raise Exception("Invalid model")
+
+
+
 def get_model_class(args):
     """Returns the model class based on the args"""
     if args.model == 'SiameseResNet':
         return SiameseResNet
     elif args.model == 'ResNetClassifier':
         return ResNetClassifier
+    elif args.model =='SiameseResNetAge':
+        return SiameseResNetAge
 
 
-def get_resnet_class(args):
+def get_resnet_class(resnet_type):
     """Returns the resnet class based on the args"""
-    if args.resnet_type == 'resnet18':
+    if resnet_type == 'resnet18':
         return models.resnet18
-    elif args.resnet_type == 'resnet34':
-        return models.resnet34
-    elif args.resnet_type == 'resnet50':
+    elif resnet_type == 'resnet50':
         return models.resnet50
-    elif args.resnet_type == 'resnet101':
-        return models.resnet101
-    elif args.resnet_type == 'resnet152':
         return models.resnet152
     else:
         raise Exception("Invalid resnet model")
