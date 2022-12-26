@@ -3,6 +3,50 @@ import torchvision
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import matplotlib.pyplot as plt
+import torchvision.transforms as transforms
+from Model.SiameseResNet import SiameseResNet
+from Model.ResNetClassifier import ResNetClassifier
+from torchvision import models
+
+def get_transform(disable_norm):
+    """Returns the transform based on the disable_norm flag"""
+    if disable_norm:
+        return transforms.Compose([
+            transforms.Resize((224,224)), 
+            transforms.ToTensor()
+        ])
+    else:
+        return transforms.Compose([
+            transforms.Resize((224,224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
+        ])
+
+
+def get_model_class(args):
+    """Returns the model class based on the args"""
+    if args.model == 'SiameseResNet':
+        return SiameseResNet
+    elif args.model == 'ResNetClassifier':
+        return ResNetClassifier
+
+
+def get_resnet_class(args):
+    """Returns the resnet class based on the args"""
+    if args.resnet_type == 'resnet18':
+        return models.resnet18
+    elif args.resnet_type == 'resnet34':
+        return models.resnet34
+    elif args.resnet_type == 'resnet50':
+        return models.resnet50
+    elif args.resnet_type == 'resnet101':
+        return models.resnet101
+    elif args.resnet_type == 'resnet152':
+        return models.resnet152
+    else:
+        raise Exception("Invalid resnet model")
+
+
 
 def display_dataset_info(writer, dataset, nrow, n_images,prefix=""):
     """

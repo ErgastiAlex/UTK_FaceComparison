@@ -1,7 +1,6 @@
 import torch
-import torchvision.transforms as transforms
-from torchvision import models
-import argparse, configparser
+
+import argparse
 
 
 from torch.utils.tensorboard import SummaryWriter
@@ -9,8 +8,6 @@ from Dataset.UTKDataset import UTKDataset
 from Solver.Solver import Solver
 
 from torch.utils.data import DataLoader
-from Model.SiameseResNet import SiameseResNet
-from Model.ResNetClassifier import ResNetClassifier
 import Utility.utility as utility
 from localconfig import config
 
@@ -94,42 +91,15 @@ def get_args():
 
 def main(args):
 
-    if args.test==True:
-        test_model(args)
-    else:
-        train_model(args)
-
-
-def test_model(args):
-    writer=SummaryWriter('./runs/test/' + args.run_name)
-
-    transform=get_transform(args.disable_norm)
-
-    # Load the dataset 
-    test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
-
-    # Create the dataloaders
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
-
-    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("Using device: ")
-    print(device)
-
-    model_class=get_model_class(args)
-
-    resnet_class=get_resnet_class(args)
-    model=model_class(resnet_type=resnet_class, resnet_hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
-
-    solver=Solver(None,test_loader,device,model,writer,args)
-    solver.load_model()
-    solver.evaluate(True)
-
-
-def train_model(args):
     writer = SummaryWriter('./runs/' + args.run_name)
 
+    if args.test==True:
+        test_model(writer,args)
+    else:
+        train_model(writer,args)
 
-    transform=get_transform(args.disable_norm)
+def train_model(writer,args):
+    transform=utility.get_transform(args.disable_norm)
 
     # Load the dataset 
     train_dataset=UTKDataset(root_dir=args.training_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.train_size, unique_images=args.unique_images,duplicate_probability=args.duplicate_probability)
@@ -139,7 +109,7 @@ def train_model(args):
     utility.display_dataset_info(writer, train_dataset, 5, 10,prefix="train")
     utility.display_dataset_info(writer, test_dataset, 5, 10,prefix="test")
 
-    model_class=get_model_class(args)
+    model_class=utility.get_model_class(args)
 
 
     if args.autotune==False:       
@@ -152,16 +122,17 @@ def train_model(args):
         print("Using device: ")
         print(device)
 
-        resnet_class=get_resnet_class(args)
+        resnet_class=utility.get_resnet_class(args)
+
         model=model_class(resnet_type=resnet_class, hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
 
         utility.add_model_info_to_tensorboard(writer, args, model)
 
-        solver= Solver(train_loader,validation_loader,device,SiameseResNet(),writer,args)
+        solver= Solver(train_loader,validation_loader,device,model,writer,args)
 
         solver.train()
 
-        writer.close()
+        test_model(writer,args)
     else:
         # Add AutoSolver only if used, it requires additional libraries
         from Solver.AutoSolver import AutoSolver
@@ -169,43 +140,30 @@ def train_model(args):
         solver.start_search()
 
 
+def test_model(writer,args):
+    transform=utility.get_transform(args.disable_norm)
+
+    # Load the dataset 
+    test_dataset=UTKDataset(root_dir=args.test_set_path, transform=transform, seed=args.seed, year_diff=args.year_diff, data_size=args.test_size)
+
+    # Create the dataloaders
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+
+    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("Using device: ")
+    print(device)
+
+    model_class=utility.get_model_class(args)
+
+    resnet_class=utility.get_resnet_class(args)
+    model=model_class(resnet_type=resnet_class, hidden_layers=args.hidden_layers, use_dropout=args.use_dropout, dropout_p=args.dropout_p)
+
+    solver=Solver(None,test_loader,device,model,writer,args)
+    solver.load_model()
+    solver.evaluate(True)
 
 
-def get_transform(disable_norm):
-    if disable_norm:
-        return transforms.Compose([
-            transforms.Resize((224,224)), 
-            transforms.ToTensor()
-        ])
-    else:
-        return transforms.Compose([
-            transforms.Resize((224,224)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
-        ])
 
-
-def get_model_class(args):
-    if args.model == 'SiameseResNet':
-        return SiameseResNet
-    elif args.model == 'ResNetClassifier':
-        return ResNetClassifier
-
-
-
-def get_resnet_class(args):
-    if args.resnet_type == 'resnet18':
-        return models.resnet18
-    elif args.resnet_type == 'resnet34':
-        return models.resnet34
-    elif args.resnet_type == 'resnet50':
-        return models.resnet50
-    elif args.resnet_type == 'resnet101':
-        return models.resnet101
-    elif args.resnet_type == 'resnet152':
-        return models.resnet152
-    else:
-        raise Exception("Invalid resnet model")
 
 
 
