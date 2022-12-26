@@ -29,8 +29,8 @@ def main():
     val_images=np.empty(0)
     test_images=np.empty(0)
 
-    images=np.array(glob.glob(args.dataset_path + '/*.jpg'))
-    print(images)
+    images_path=os.path.join(args.dataset_path, '*.jpg')
+    images=np.array(glob.glob(images_path))
 
     ages=np.vectorize(lambda x: re.search("(\d+)_\d_\d_\d+\.jpg.*",x))(images)
     images_data=np.c_[images,ages]
@@ -47,7 +47,6 @@ def main():
 
         train_count=int(count*args.train_size/100)
         val_count=int(count*args.val_size/100)
-        test_count=int(count*args.test_size/100)
 
 
         train_images=np.append(train_images, images_data[images_data[:,1]==age][:train_count,0])
@@ -72,13 +71,19 @@ def main():
     print("Saving images...")
     # save the train and test images
     for image in train_images:
-        shutil.copy(image, args.trainset_path+'/'+image.split('/')[-1])
+        image_name=os.path.split(image)[-1]
+        image_path=os.path.join(args.trainset_path, image_name)
+        shutil.copy(image, image_path)
 
     for image in val_images:
-        shutil.copy(image, args.valset_path+'/'+image.split('/')[-1])
+        image_name=os.path.split(image)[-1]
+        image_path=os.path.join(args.valset_path, image_name)
+        shutil.copy(image, image_path)
 
     for image in test_images:
-        shutil.copy(image, args.testset_path+'/'+image.split('/')[-1])
+        image_name=os.path.split(image)[-1]
+        image_path=os.path.join(args.testset_path, image_name)
+        shutil.copy(image, image_path)
 
     
     
