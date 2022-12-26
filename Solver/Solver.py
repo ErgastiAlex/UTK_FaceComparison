@@ -247,6 +247,7 @@ class Solver():
 
             fpr, tpr, thresholds=roc_curve(y_true,y_pred)
 
+            figure=plt.figure(figsize=(10, 10))
             plt.title('Receiver Operating Characteristic')
             plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % auc_score)
             plt.legend(loc = 'lower right')
@@ -255,7 +256,7 @@ class Solver():
             plt.ylim([0, 1])
             plt.ylabel('True Positive Rate')
             plt.xlabel('False Positive Rate')
-            self.writer.add_figure('ROC', plt.gcf())
+            self.writer.add_figure('ROC', figure)
 
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader), auc_score
 
