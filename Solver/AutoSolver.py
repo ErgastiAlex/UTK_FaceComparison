@@ -4,10 +4,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from filelock import FileLock
-from torch.utils.data import random_split
+
 import torchvision
-import torchvision.transforms as transforms
+from sklearn.metrics import roc_auc_score
 
 import ray
 from ray import tune
@@ -149,6 +148,10 @@ class AutoSolver():
             val_steps = 0
             total = 0
             correct = 0
+
+            y_pred=np.array([])
+            y_true=np.array([])
+
             for i, data in enumerate(valloader, 0):
                 with torch.no_grad():
                     inputs, labels = data
@@ -165,6 +168,12 @@ class AutoSolver():
                     val_loss += loss.cpu().numpy()
                     val_steps += 1
 
+                    #Appends the outputs and labels to compute the AUC score
+                    y_pred=np.append(y_pred,outputs.cpu().numpy())
+                    y_true=np.append(y_true,labels.cpu().numpy())
+
+            auc_score=roc_auc_score(y_true,y_pred)
+
             # Here we save a checkpoint. It is automatically registered with
             # Ray Tune and can be accessed through `session.get_checkpoint()`
             # API in future iterations.
@@ -177,7 +186,7 @@ class AutoSolver():
                 torch.save((net.state_dict(), optimizer.state_dict()), self.model_path+"/checkpoint.pt")
 
             checkpoint = Checkpoint.from_directory(self.model_path)
-            session.report({"loss": (val_loss / val_steps), "accuracy": correct / total}, checkpoint=checkpoint)
+            session.report({"loss": (val_loss / val_steps), "accuracy": correct / total, "AUC":auc_score}, checkpoint=checkpoint)
 
         print("Finished Training")
 
@@ -204,17 +213,28 @@ class AutoSolver():
 
         correct = 0
         total = 0
+
+        y_pred=np.array([])
+        y_true=np.array([])
         with torch.no_grad():
             for data in testloader:
                 images, labels = data
                 images, labels = images.to(device), labels.to(device)
+
                 outputs = best_trained_model(images)
                 predicted=torch.gt(outputs,0.5).int()
+
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
+                #Appends the outputs and labels to compute the AUC score
+                y_pred=np.append(y_pred,outputs.cpu().numpy())
+                y_true=np.append(y_true,labels.cpu().numpy())
 
-        print("Best trial test set accuracy: {}".format(correct / total))
+        
+        auc_score=roc_auc_score(y_true,y_pred)
+
+        print("Best trial test set accuracy: {}, AUC_score: {}".format(correct / total, auc_score))
     
     def __get_resnet_model(self, resnet_type):
         if resnet_type == "resnet18":

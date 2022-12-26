@@ -3,7 +3,9 @@ import os
 import glob
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from sklearn.metrics import roc_curve, roc_auc_score
 import copy
+import numpy as np
 
 class Solver():
     """Solver for training and testing a model with parameters defined by the user in the config file."""
@@ -146,11 +148,12 @@ class Solver():
 
             self.save_model(epoch, len(self.train_loader))
             # Early stopping 
-            evalutation_loss, evaluation_accuracy= self.evaluate()
+            evalutation_loss, evaluation_accuracy, evaluation_auc_score= self.evaluate()
 
 
             self.writer.add_scalar("Loss/eval",evalutation_loss,epoch)
             self.writer.add_scalar("Accuracy/eval",evaluation_accuracy,epoch)
+            self.writer.add_scalar("AUC/eval",evaluation_auc_score,epoch)
 
             # For early stopping we use the loss on the validation set not the accuracy
             if evalutation_loss < evalutation_best_loss:
@@ -214,6 +217,9 @@ class Solver():
 
         running_loss = 0.0
         accuracy = 0.0
+
+        y_pred=np.array([])
+        y_true=np.array([])
         with torch.no_grad():
             for i, (x, y) in enumerate(self.test_loader,0):
                 x = x.to(self.device)
@@ -225,13 +231,32 @@ class Solver():
                 running_loss+= loss.item()
                 accuracy += (torch.gt(output,0.5).int() == y).sum().item() / y.shape[0]
 
+                # Append the predictions and the true labels to compute the ROC curve
+                y_pred=np.append(y_pred,output.cpu().numpy())
+                y_true=np.append(y_true,y.cpu().numpy())
+
+        auc_score=roc_auc_score(y_true,y_pred)
         
-        print("Test loss: {}, Test accuracy: {}".format(running_loss / len(self.test_loader), accuracy / len(self.test_loader)))
+        print("Test loss: {}, Test accuracy: {} Test AUC: {}".format(running_loss / len(self.test_loader), accuracy / len(self.test_loader), auc_score))
 
         if write_to_tensorboard:
-            self.writer.add_text("Test loss", running_loss / len(self.test_loader))
-            self.writer.add_text("Test accuracy", accuracy / len(self.test_loader))
 
-        return running_loss / len(self.test_loader), accuracy / len(self.test_loader)
+            self.writer.add_text("Test loss", str(running_loss / len(self.test_loader)))
+            self.writer.add_text("Test accuracy", str(accuracy / len(self.test_loader)))
+            self.writer.add_text("Test AUC", str(auc_score))
+
+            fpr, tpr, thresholds=roc_curve(y_true,y_pred)
+
+            plt.title('Receiver Operating Characteristic')
+            plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % auc_score)
+            plt.legend(loc = 'lower right')
+            plt.plot([0, 1], [0, 1],'r--')
+            plt.xlim([0, 1])
+            plt.ylim([0, 1])
+            plt.ylabel('True Positive Rate')
+            plt.xlabel('False Positive Rate')
+            self.writer.add_figure('ROC', plt.gcf())
+
+        return running_loss / len(self.test_loader), accuracy / len(self.test_loader), auc_score
 
             
