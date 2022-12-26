@@ -2,8 +2,9 @@ from torchvision import models
 import torch
 from Model.BaseClassifier import BaseClassifier
 
-class SiameseResNet(BaseClassifier):
-    """Siamese ResNet that takes two images as input and outputs who is older"""
+
+class SiameseResNetAge(BaseClassifier):
+
     def forward(self, x):
         img1,img2=torch.split(x,1,1) # [x, 2, 3, h, w] -> [x, 1, 3,h, w] [x, 1, 3,h, w]
 
@@ -27,3 +28,12 @@ class SiameseResNet(BaseClassifier):
 
     def get_feature_map_dim(self):
         return self.feature_map_dim
+
+
+def main():
+    m=SiameseResNet(hidden_layers=[],resnet_type=models.resnet18,use_dropout=False,dropout_p=0.5)
+    print(m)
+
+
+if __name__== "__main__":
+    main()
