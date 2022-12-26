@@ -42,13 +42,18 @@ def get_args():
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
     parser.add_argument('--opt', type=str, default='Adam', choices=['SGD', 'Adam'], help = 'optimizer used for training')
     parser.add_argument('--criterion', type=str, default='BCELoss', choices=['BCELoss', 'MSELoss'], help = 'criterion used for training')
-
-
     parser.add_argument('--weight_decay', type=float, default=0.001, help='weight decay for the optimizer')
+
+    #Solver parameters
+    parser.add_argument('--patience', type=int, default=5, help='patience for the early stopping')
 
     # Automatic hyperparameter tuning
     parser.add_argument('--autotune', action='store_true', help='enable automatic hyperparameter tuning, other hyperparameters will be ignored\n'+
                                                                 'autotune will tune the following hyperparameters: lr, weight_decay, dropout_p, hidden_layers, resnet_type')
+    parser.add_argument('--num_samples', type=int, default=10, help='number of samples for the automatic hyperparameter tuning')
+    parser.add_argument('--max_num_epochs', type=int, default=10, help='maximum number of epochs for the automatic hyperparameter tuning')
+    parser.add_argument('--gpus_per_trial', type=int, default=2, help='number of gpus for the automatic hyperparameter tuning')
+                                                           
 
     parser.add_argument('--disable_norm', action='store_true', help="disable normalization of the images")
 
@@ -59,7 +64,7 @@ def get_args():
     parser.add_argument('--test_set_path', type=str, default='./UTKFace/test', help='test set path')
     parser.add_argument('--checkpoint_path', type=str, default='./models', help='path were to save the trained model')
 
-
+    
     parser.add_argument('--resume_train', action='store_true', help='load the model from checkpoint before training')
 
     # Dataset parameters
@@ -137,7 +142,7 @@ def train_model(writer,args):
         # Add AutoSolver only if used, it requires additional libraries
         from Solver.AutoSolver import AutoSolver
         solver=AutoSolver(train_dataset,validation_dataset,test_dataset,model_class,writer,args)
-        solver.start_search()
+        solver.start_search(num_samples=args.num_samples, max_num_epochs=args.max_num_epochs, gpus_per_trial=args.gpus_per_trial)
 
 
 def test_model(writer,args):

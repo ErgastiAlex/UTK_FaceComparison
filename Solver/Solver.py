@@ -19,7 +19,7 @@ class Solver():
         self.test_loader = test_loader
 
         # Patience for early stopping, ask the user to input it
-        self.patience=5
+        self.patience=args.patience
         self.model = model
         
         self.device = device
