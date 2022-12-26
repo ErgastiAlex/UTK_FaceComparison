@@ -98,7 +98,7 @@ def test_model(args):
     print("Using device: ")
     print(device)
 
-    resnet_class=utility.get_resnet_class(args)
+    resnet_class=utility.get_resnet_class(args.resnet_type)
     model=ResNetAgeClassifier(resnet_type=resnet_class)
 
     solver=Solver(None,test_loader,device,model,writer,args)
@@ -125,7 +125,7 @@ def train_model(args):
     print("Using device: ")
     print(device)
 
-    resnet_class=utility.get_resnet_class(args)
+    resnet_class=utility.get_resnet_class(args.resnet_type)
     model=ResNetAgeClassifier(resnet_type=resnet_class)
 
     solver=Solver(train_loader,validation_loader,device,model,writer,args)
