@@ -3,6 +3,13 @@ import torch
 
 class BaseClassifier(torch.nn.Module):
     def __init__(self,hidden_layers=[100], resnet_type=models.resnet50, use_dropout=False, dropout_p=0.5):
+        """Base class for all classifiers
+            Args:
+            hidden_layers: List of hidden layers
+            resnet_type: Resnet Class
+            use_dropout: Use dropout or not
+            dropout_p: Dropout probability
+        """
         super().__init__() 
 
 

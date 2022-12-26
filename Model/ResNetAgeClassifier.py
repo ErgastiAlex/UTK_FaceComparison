@@ -5,7 +5,6 @@ class ResNetAgeClassifier(torch.nn.Module):
     def __init__(self, resnet_type=models.resnet50):
         super().__init__() 
 
-
         self.resnet = resnet_type()
 
         fc_layers=[torch.nn.Linear(self.resnet.fc.in_features,1,bias=True)]
