@@ -105,7 +105,14 @@ During the training the model will one train the FC layers and not the ResNet.
 
 # Ablation Experiment
 
-This experiment has been produced by the AutoSolver using Ray Tune
+This experiment has been produced by the AutoSolver using Ray Tune.
+All the models have been trained using the following dataset dimension:
+
+| Dataset        | Dim  |
+| -------------- | ---- |
+| Training set   | 100k |
+| Validation set | 5k   |
+| Test set       | 5k   |
 
 ## SiameseResNet
 
