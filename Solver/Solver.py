@@ -191,8 +191,6 @@ class Solver():
         #Save the best model as the last model
         self.save_model(self.epochs+1, 0) 
 
-        self.evaluate()
-
     def add_gradient_hist(net):
         ave_grads = [] 
         layers = []
@@ -275,6 +273,7 @@ class Solver():
             plt.ylabel('True Positive Rate')
             plt.xlabel('False Positive Rate')
             self.writer.add_figure('ROC', figure)
+            self.writer.flush()
 
         return running_loss / len(self.test_loader), accuracy / len(self.test_loader), auc_score
 

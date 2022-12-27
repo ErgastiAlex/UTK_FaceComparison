@@ -103,6 +103,8 @@ def main(args):
     else:
         train_model(writer,args)
 
+    writer.close()
+
 def train_model(writer,args):
     transform=utility.get_transform(args.disable_norm)
 
