@@ -256,7 +256,6 @@ class Solver():
         print("Test loss: {}, Test accuracy: {} Test AUC: {}".format(running_loss / len(self.test_loader), accuracy / len(self.test_loader), auc_score))
 
         if write_to_tensorboard:
-
             self.writer.add_text("Test loss", str(running_loss / len(self.test_loader)))
             self.writer.add_text("Test accuracy", str(accuracy / len(self.test_loader)))
             self.writer.add_text("Test AUC", str(auc_score))

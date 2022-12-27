@@ -273,7 +273,7 @@ def main():
     import matplotlib.pyplot as plt
     import os
 
-    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, unique_images=True,duplicate_probability=0.5)
+    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, unique_images=False,duplicate_probability=0.5)
     
 
     # Visualize the data
@@ -292,6 +292,7 @@ def main():
         plt.axis("off")
 
         plt.imshow(transforms.ToPILImage()(torch.cat((img0,img1),dim=2)))
+
 
     plt.tight_layout()
     plt.show()

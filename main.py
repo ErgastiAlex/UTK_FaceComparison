@@ -127,7 +127,6 @@ def train_model(writer,args):
         print(device)
 
         model=utility.get_model(args)
-
         utility.add_model_info_to_tensorboard(writer, args, model)
 
         solver= Solver(train_loader,validation_loader,device,model,writer,args)
@@ -162,6 +161,7 @@ def test_model(writer,args):
 
     solver=Solver(None,test_loader,device,model,writer,args)
     solver.load_model()
+
     solver.evaluate(True)
 
 
