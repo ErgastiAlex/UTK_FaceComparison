@@ -82,13 +82,26 @@ class Solver():
         # get the last model saved in the folder
         last_model= max(saved_models, key=os.path.getctime)
 
-        epoch, iteration = last_model.split("_")[-2:]
-        iteration=iteration.split(".")[0]
+        epoch, iteration= 0,0
+        try:
+            epoch, iteration = last_model.split("_")[-2:]
+            iteration=iteration.split(".")[0]
+            epoch=int(epoch)
+            iteration=int(iteration)
+        except:
+            #The model was saved without any epoch and iteration information
+            pass
 
-        self.model.load_state_dict(torch.load(last_model))
+        if torch.cuda.device_count() > 1:
+            self.model.to(self.device)
+            self.model.load_state_dict(torch.load(last_model))
+            self.model = torch.nn.DataParallel(self.model)
+        else:
+            self.model.load_state_dict(torch.load(last_model))
+
         print("Model loaded!")
 
-        return int(epoch), int(iteration)
+        return epoch,iteration
 
 
     def train(self):
