@@ -52,14 +52,14 @@ The UTKDataset is higly configurable with this input parameters:
 - `duplicate_probability` is the probability of duplicating a combination of images by switching the order. The duplication will result in a dataset that is larger by a factor of 1 | duplicate_probability.
 - `unique_images` is a boolean indicating whether or not to use each image only once in the dataset.
 
-TODO: Add some proof
-
 The model proposed are trained with:
 
 - `unique_images` to false, to be able to propose more combination example to the model
 - `year_diff` equal to 1, to put the model in the most difficult case
 - `duplicate_probability` equal to 0, to avoid putting to many duplicates
 - `data_size` equal to 100k, to keep the training time reasonable
+
+This parameters has been chosen to improve the number of combination examples shown to the ResNet
 
 ## UTKAgeDataset class
 
@@ -98,24 +98,30 @@ This model consists of two identical ResNet use to extract a feature map from ea
 
 This model consists of a ResNet that takes as an input a image with 6 channels, this image is composed of the two images concatenated along the channel axis, at the end of the resnet there are FC layers to classifyt if the left image is older or not.
 
+## SiameseResNetAge Classifier
+
+This model is very similar to the SiameseResNet, but it uses a pretrained ResNet that classify the age of a given face.
+During the training the model will one train the FC layers and not the ResNet.
+
 # Ablation Experiment
 
 This experiment has been produced by the AutoSolver using Ray Tune
 
 ## SiameseResNet
 
-| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy  |
-| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | --------- |
-| \_\_train_176e7_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | False       | 5.06796e-05  | 10   | 3671.92        | 0.644346     | **0.824** |
-| \_\_train_176e7_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | True        | 1.34209e-05  | 1    | 851.986        | 0.43919      | 0.7796    |
-| \_\_train_176e7_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | True        | 7.60351e-06  | 1    | 741.517        | 0.581454     | 0.678     |
-| \_\_train_176e7_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | True        | 4.10899e-05  | 1    | 854.674        | 50.0597      | 0.5       |
-| \_\_train_176e7_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | True        | 5.92368e-06  | 1    | 522.538        | 0.693192     | 0.5028    |
-| \_\_train_176e7_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | True        | 5.58359e-06  | 2    | 717.701        | **0.402612** | 0.8062    |
-| \_\_train_176e7_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | True        | 0.00173744   | 1    | 845.759        | 0.514387     | 0.7518    |
-| \_\_train_176e7_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | True        | 0.000681391  | 2    | 3479           | 0.468881     | 0.7974    |
-| \_\_train_176e7_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | False       | 0.00189003   | 2    | 1477.42        | 0.407465     | 0.7964    |
+| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy   | AUC         |
+| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | ---------- | ----------- |
+| \_\_train_d46fc_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | &cross;     | 5.06796e-05  | 10   | 7187.98        | 0.416078     | 0.825      | 0.914002    |
+| \_\_train_d46fc_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | &check;     | 1.34209e-05  | 1    | 868.455        | 0.445902     | 0.786      | 0.87629     |
+| \_\_train_d46fc_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | &check;     | 7.60351e-06  | 1    | 761.974        | 0.680393     | 0.5606     | 0.593323    |
+| \_\_train_d46fc_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | &check;     | 4.10899e-05  | 1    | 865.805        | 0.694148     | 0.4972     | 0.491982    |
+| \_\_train_d46fc_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | &check;     | 5.92368e-06  | 1    | 766.598        | 0.604223     | 0.7224     | 0.775198    |
+| \_\_train_d46fc_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | &check;     | 5.58359e-06  | 4    | 3031.08        | **0.387461** | **0.8294** | **0.91727** |
+| \_\_train_d46fc_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | &check;     | 0.00173744   | 1    | 851.608        | 0.538291     | 0.7292     | 0.805117    |
+| \_\_train_d46fc_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | &check;     | 0.000681391  | 1    | 1547.35        | 0.693506     | 0.5        | 0.487549    |
+| \_\_train_d46fc_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | &cross;     | 0.00189003   | 2    | 1473.61        | 0.536957     | 0.7412     | 0.828701    |
 
+The best model is a simple resnet18.
 Best trial config:
 
 ```json
@@ -130,43 +136,49 @@ Best trial config:
 }
 ```
 
-Performance of the best model:
-| validation loss | validation accuracy |
-| ------------------- | ------------------- |
-| 0.40261170211111663 | 0.8062 |
+Best trial final validation loss: 0.38746090527552707
+Best trial final validation accuracy: 0.8294
+Best trial test set accuracy: 0.8234, AUC_score: 0.9140750400000001
+
+The accuracy is calculated using a threshold of 0.5
 
 ## ResNetClassifier
 
-| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy   |
-| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | ---------- |
-| \_\_train_5ea5d_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | &cross;     | 5.06796e-05  | 10   | 3646.47        | 0.733621     | **0.7942** |
-| \_\_train_5ea5d_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | &check;     | 1.34209e-05  | 4    | 2143.92        | **0.442943** | 0.7858     |
-| \_\_train_5ea5d_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | &check;     | 7.60351e-06  | 1    | 445.046        | 0.66125      | 0.6238     |
-| \_\_train_5ea5d_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | &check;     | 4.10899e-05  | 1    | 535.922        | 4.77258      | 0.504      |
-| \_\_train_5ea5d_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | &check;     | 5.92368e-06  | 1    | 378.15         | 0.650033     | 0.644      |
-| \_\_train_5ea5d_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | &check;     | 5.58359e-06  | 2    | 716.849        | 0.521344     | 0.7452     |
-| \_\_train_5ea5d_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | &check;     | 0.00173744   | 2    | 1059.43        | 0.535556     | 0.718      |
-| \_\_train_5ea5d_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | &check;     | 0.000681391  | 1    | 1173.96        | 0.693327     | 0.5        |
-| \_\_train_5ea5d_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | &cross;     | 0.00189003   | 4    | 1778.04        | 0.49628      | 0.7682     |
-| \_\_train_5ea5d_00009 | 128        | 0.597436     | [512, 256, 128] | 0.0891902   | resnet50    | &check;     | 0.000687784  | 1    | 392.492        | 49.707       | 0.5        |
+| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy | AUC          |
+| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | -------- | ------------ |
+| \_\_train_78f21_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | &cross;     | 5.06796e-05  | 10   | 4071.29        | **0.438381** | 0.7966   | 0.883987     |
+| \_\_train_78f21_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | &check;     | 1.34209e-05  | 2    | 1094.55        | 0.510653     | 0.7504   | 0.838142     |
+| \_\_train_78f21_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | &check;     | 7.60351e-06  | 1    | 457.527        | 0.665431     | 0.5982   | 0.642916     |
+| \_\_train_78f21_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | &check;     | 4.10899e-05  | 1    | 552.325        | 0.697621     | 0.5      | 0.494179     |
+| \_\_train_78f21_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | &check;     | 5.92368e-06  | 1    | 420.208        | 0.627728     | 0.6724   | 0.704657     |
+| \_\_train_78f21_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | &check;     | 5.58359e-06  | 10   | 4119.39        | 0.483091     | **0.8**  | **0.897777** |
+| \_\_train_78f21_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | &check;     | 0.00173744   | 1    | 539.234        | 0.601481     | 0.683    | 0.745532     |
+| \_\_train_78f21_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | &check;     | 0.000681391  | 1    | 1196.29        | 0.693234     | 0.5      | 0.499012     |
+| \_\_train_78f21_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | &cross;     | 0.00189003   | 1    | 498.209        | 0.667643     | 0.5944   | 0.629829     |
+| \_\_train_78f21_00009 | 128        | 0.597436     | [512, 256, 128] | 0.0891902   | resnet50    | &check;     | 0.000687784  | 1    | 466.556        | 50.4337      | 0.4998   | 0.50039      |
 
-Best trial config:
+A simple resnet18 has a great accuracy and AUC, but an higher loss compared to a resnet18 with some hidden layers.
+
+The model with the best loss has this configuration:
 
 ```json
 {
-  "lr": 0.00018096700138086342,
-  "batch_size": 32,
+  "lr": 0.005285108213178958,
+  "batch_size": 64,
   "hidden_layers": [512, 256, 128],
-  "use_dropout": true,
-  "dropout_prob": 0.41978191409759136,
-  "weight_decay": 1.342085547606527e-5,
-  "resnet_type": "resnet50"
+  "use_dropout": false,
+  "dropout_prob": 0.20068111676973313,
+  "weight_decay": 5.067959425940853e-5,
+  "resnet_type": "resnet18"
 }
 ```
 
-Performance of the best model:
-| validation loss | validation accuracy |
-| ------------------- | ------------------- |
-| 0.44294281541162234 | 0.7858 |
+Best trial final validation loss: 0.43838050320178645
+Best trial final validation accuracy: 0.7966
+Best trial test set accuracy: 0.767, AUC_score: 0.8535112
+
+The best accuracy and AUC score is achived by a simple resnet without any hidden layers, this proves that a resnet is enough to achieve a good performance on the task. This is probably because a resnet18 is able to extract a meaningful feature vector that can be classified with a simple MLP.
 
 # Conclusion
+
+Overall, between the Siamese and the modified ResNet, the best model is the first one, this is probably because the Siamese extract 2 feature map instead of a single one, as in the ResNet. Hence it is able to provide to the MLP more information.
