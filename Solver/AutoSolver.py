@@ -82,6 +82,10 @@ class AutoSolver():
         resnet_type = utility.get_resnet_class(config["resnet_type"])
         net = self.model_class(hidden_layers=config["hidden_layers"], use_dropout=config["use_dropout"], dropout_p=config["dropout_prob"], resnet_type=resnet_type)
 
+        if self.args.model=="SiameseResNetAge":
+            print("Loading model weights from: ",self.args.checkpoint_path+"/"+config["resnet_type"]+'AgeClassifier',flush=True)
+            net.load_model(self.args.checkpoint_path, config["resnet_type"])
+
         device = "cpu"
 
         # If there are GPUs available, use them.
