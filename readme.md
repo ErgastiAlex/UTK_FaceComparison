@@ -179,6 +179,15 @@ Best trial test set accuracy: 0.767, AUC_score: 0.8535112
 
 The best accuracy and AUC score is achived by a simple resnet without any hidden layers, this proves that a resnet is enough to achieve a good performance on the task. This is probably because a resnet18 is able to extract a meaningful feature vector that can be classified with a simple MLP.
 
+The model was retrained from scratch and gets this performances:
+
+| Dataset    | Loss                | Accuracy           | AUC        |
+| ---------- | ------------------- | ------------------ | ---------- |
+| Validation | 0.3589838809648137  | 0.8411624203821656 | 0.92645456 |
+| Test       | 0.36990593430722596 | 0.8234474522292994 | 0.92036864 |
+
+The model is saved as `models\SiameseResNetClassifier_ResNet18\best_model.pth`
+
 # Conclusion
 
 Overall, between the Siamese and the modified ResNet, the best model is the first one, this is probably because the Siamese extract 2 feature map instead of a single one, as in the ResNet. Hence it is able to provide to the MLP more information.
