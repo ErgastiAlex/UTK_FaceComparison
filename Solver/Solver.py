@@ -22,8 +22,10 @@ class Solver():
         self.patience=args.patience
         self.model = model
         
-        self.device = device
-        if torch.cuda.device_count() > 1:
+        self.device = device 
+
+        # Don't load the model in DataParallel if we are testing here, it will be done inside load_model
+        if torch.cuda.device_count() > 1 and args.test==False:
                 self.model = torch.nn.DataParallel(self.model) # the module is copied to each GPU and each one handles a portion of the batch
         self.model.to(self.device)
 
@@ -91,13 +93,12 @@ class Solver():
         except:
             #The model was saved without any epoch and iteration information
             pass
+        
+        self.model.load_state_dict(torch.load(last_model))
 
         if torch.cuda.device_count() > 1:
-            self.model.to(self.device)
-            self.model.load_state_dict(torch.load(last_model))
             self.model = torch.nn.DataParallel(self.model)
-        else:
-            self.model.load_state_dict(torch.load(last_model))
+            
 
         print("Model loaded!")
 
@@ -146,9 +147,6 @@ class Solver():
                     self.writer.add_scalar("Loss/train",running_loss / self.args.print_every, epoch * len(self.train_loader) + i)
                     self.writer.add_scalar("Accuracy/train",accuracy / self.args.print_every, epoch * len(self.train_loader) + i)
 
-                    # self.writer('Gradients',
-                    #         add_gradient_hist(self.model),
-                    #         global_step=epoch * len(trainloader) + i))
 
                     print("Epoch: {}, Iteration: {}, Loss: {}, Accuracy: {}".format(epoch, i, running_loss / self.args.print_every, accuracy / self.args.print_every), flush=True)
                     running_loss = 0.0
@@ -191,36 +189,6 @@ class Solver():
         #Save the best model as the last model
         self.save_model(self.epochs+1, 0) 
 
-    def add_gradient_hist(net):
-        ave_grads = [] 
-        layers = []
-        for n,p in net.named_parameters():
-            if ("bias" not in n):
-                layers.append(n)
-                if p.requires_grad: 
-                    ave_grad = np.abs(p.grad.clone().detach().cpu().numpy()).mean()
-                else:
-                    ave_grad = 0
-                ave_grads.append(ave_grad)
-
-        layers = [layers[i].replace(".weight", "") for i in range(len(layers))]
-
-        fig = plt.figure(figsize=(12, 12))
-        plt.bar(np.arange(len(ave_grads)), ave_grads, lw=1, color="b")
-        plt.hlines(0, 0, len(ave_grads) + 1, lw=2, color="k")
-        plt.xticks(range(0, len(ave_grads), 1), layers, rotation=90)
-        plt.xlim(left=0, right=len(ave_grads))
-        plt.ylim(bottom=-0.001, top=np.max(ave_grads) / 2)  # zoom in on the lower gradient regions
-        plt.xlabel("Layers")
-        plt.ylabel("average gradient")
-        plt.title("Gradient flow")
-        #plt.grid(True)
-        plt.legend([Line2D([0], [0], color="b", lw=4),
-                    Line2D([0], [0], color="k", lw=4)], ['mean-gradient', 'zero-gradient'])
-        plt.tight_layout()
-        #plt.show()
-
-        return fig
 
     def evaluate(self, write_to_tensorboard=False):
         print("Testing...")
