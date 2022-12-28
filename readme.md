@@ -189,11 +189,68 @@ The model with the best loss has this configuration:
 }
 ```
 
-Best trial final validation loss: 0.43838050320178645
-Best trial final validation accuracy: 0.7966
-Best trial test set accuracy: 0.767, AUC_score: 0.8535112
+Best trial final validation loss: 0.43838050320178645 \\
+Best trial final validation accuracy: 0.7966 \\
+Best trial test set accuracy: 0.767, AUC_score: 0.8535112 \\
 
 The best accuracy and AUC score is achived by a simple resnet without any hidden layers, this proves that a resnet is enough to achieve a good performance on the task. This is probably because a resnet18 is able to extract a meaningful feature vector that can be classified with a simple MLP.
+
+### ResNetClassifier without any hidden layers
+
+The simple ResNet18 model was retrained from scratch and gets this performances:
+
+| Dataset    | Loss                | Accuracy           | AUC                |
+| ---------- | ------------------- | ------------------ | ------------------ |
+| Validation | 0.40788126447398193 | 0.8136942675159236 | 0.8999772800000001 |
+| Test       | 0.4258542314266703  | 0.7925955414012739 | 0.8887508799999999 |
+
+The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth`
+
+### ResNetClassifier with hidden layers
+
+| Dataset    | Loss                | Accuracy           | AUC                |
+| ---------- | ------------------- | ------------------ | ------------------ |
+| Validation | 0.4490210417705246  | 0.7786787974683544 | 0.8814552000000001 |
+| Test       | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
+
+The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
+
+## ResNetAgeClassifier
+
+| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy   | AUC          |
+| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | ---------- | ------------ |
+| \_\_train_14331_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | False       | 5.06796e-05  | 10   | 7653.23        | **0.542608** | **0.7096** | **0.797143** |
+| \_\_train_14331_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | True        | 1.34209e-05  | 8    | 6123.63        | 0.542759     | 0.707      | 0.792207     |
+| \_\_train_14331_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | True        | 7.60351e-06  | 1    | 752.132        | 49.7231      | 0.5        | 0.5          |
+| \_\_train_14331_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | True        | 4.10899e-05  | 1    | 767.461        | 50.0199      | 0.4998     | 0.4998       |
+| \_\_train_14331_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | True        | 5.92368e-06  | 1    | 774.859        | 0.570163     | 0.6922     | 0.76846      |
+| \_\_train_14331_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | True        | 5.58359e-06  | 8    | 5595.45        | 0.552646     | 0.7048     | 0.793962     |
+| \_\_train_14331_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | True        | 0.00173744   | 1    | 766.799        | 0.578737     | 0.6986     | 0.796634     |
+| \_\_train_14331_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | True        | 0.000681391  | 1    | 1105.48        | 0.595709     | 0.6698     | 0.746909     |
+| \_\_train_14331_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | False       | 0.00189003   | 10   | 5739.19        | 0.547779     | 0.7094     | 0.789819     |
+| \_\_train_14331_00009 | 128        | 0.597436     | [512, 256, 128] | 0.0891902   | resnet50    | True        | 0.000687784  | 1    | 723.084        | 50.0051      | 0.4998     | 0.4996       |
+
+Best trial config:
+
+```json
+{
+  "lr": 0.005285108213178958,
+  "batch_size": 64,
+  "hidden_layers": [512, 256, 128],
+  "use_dropout": false,
+  "dropout_prob": 0.20068111676973313,
+  "weight_decay": 5.067959425940853e-5,
+  "resnet_type": "resnet18"
+}
+```
+
+Best trial final validation loss: 0.5426079106481769
+Best trial final validation accuracy: 0.7096
+Best trial test set accuracy: 0.682, AUC_score: 0.7627742399999999
+
+| Model | Accuracy | AUC |
+| ----- | -------- | --- |
+|       |          |     |
 
 # Conclusion
 
