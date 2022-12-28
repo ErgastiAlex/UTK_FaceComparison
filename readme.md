@@ -215,6 +215,16 @@ The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
+### Comparison with and without hidden layers
+
+| Model              | Loss                | Accuracy           | AUC                |
+| ------------------ | ------------------- | ------------------ | ------------------ |
+| Test               | 0.4258542314266703  | 0.7925955414012739 | 0.8887508799999999 |
+| With hidden_layers | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
+
+Overall the performance are similar, but looking at the chart of the loss the model with hidden layers tends to overfit less on the higher epochs. This is probably caused by a vanishing gradient or the weight decay.
+Comparing the model I think that the better one is the resnet18 without any hidden layers, in this way it is possible to obtain good performance without increasing the number of parameters.
+
 ## ResNetAgeClassifier
 
 | Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy   | AUC          |
