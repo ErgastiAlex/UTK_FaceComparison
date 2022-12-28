@@ -33,7 +33,7 @@ def get_args():
     parser.add_argument('--model', type=str, default='SiameseResNet', choices=['SiameseResNet','ResNetClassifier','SiameseResNetAge'], help='model used')
 
     parser.add_argument('--resnet_type', type=str, default='resnet18', choices=['resnet18','resnet50'], help='resnet type used for the model')
-    parser.add_argument('--hidden_layers',nargs='+',default=[], help='hidden layers of the model, currently only for SiameseResNet')
+    parser.add_argument('--hidden_layers',nargs='+',default=[],type=int, help='hidden layers of the model, currently only for SiameseResNet')
     parser.add_argument('--use_dropout', action='store_true', help='use dropout for the model')
     parser.add_argument('--dropout_p', type=float, default=0.5, help='dropout rate for the model')
 
