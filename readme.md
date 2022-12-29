@@ -67,6 +67,8 @@ TODO
 
 # Solver
 
+TODO: Expand with model classification explanation
+
 ## Basic Solver
 
 This is a basic solver that train the model with the given loss, it has the following input parameters:
@@ -214,6 +216,8 @@ The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth
 | Test       | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
+
+Looking at the loss, it doesn't improve after some epochs, this is probably caused by a weight decay parameters to high that doesn't allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one.
 
 ### Comparison with and without hidden layers
 
