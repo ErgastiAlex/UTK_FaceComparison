@@ -131,7 +131,7 @@ This model consists of a ResNet that takes as an input a image with 6 channels, 
 This model is very similar to the SiameseResNet, but it uses a pretrained age regressor ResNet model.
 During the training the model will only train the FC layers and not the ResNet.
 
-# Ablation Experiment
+# Hyperparameters Search and model comparison
 
 This experiment has been produced by the AutoSolver using Ray Tune.
 All the models have been trained using the following dataset dimension:
@@ -172,7 +172,9 @@ Best trial config:
 ```
 
 Best trial final validation loss: 0.38746090527552707
+
 Best trial final validation accuracy: 0.8294
+
 Best trial test set accuracy: 0.8234, AUC_score: 0.9140750400000001
 
 The accuracy is calculated using a threshold of 0.5
@@ -245,7 +247,7 @@ The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
-Looking at the loss, it doesn’t improve after some epochs, this is probably caused by a weight decay parameters to high that doesn’t allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one.
+Looking at the loss, it doesn’t improve after some epochs, this is caused by a weight decay parameters to high that doesn’t allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one. Indeed the same model trained with smaller weight decay achives a smaller loss.
 
 ### Comparison with and without hidden layers
 
@@ -308,4 +310,10 @@ In addition to the previous thing there is also a tensorboard board that gives s
 
 # Conclusion
 
-Overall, between the Siamese and the modified ResNet, the best model is the first one, this is probably because the Siamese extract 2 feature map instead of a single one, as in the ResNet. Hence it is able to provide to the MLP more information.
+Overall, the best model is the SiameseResNet trained from scratch, it achieves very good AUC score and a reasonable high accuracy with fixed threshold.
+
+The reasons why this model is so much better are probably these:
+
+- Compared to the SiameseResNet with the ResNet pretrained as an age detector the best model has more example to train with. Indeed the ResNet age regressor was trained with ~17k images, but the SiameseResNetClassifier was trained with 100k combinations of this ~17k images, being probably able to learn which feature should be extract to say which image is the older one. This hypothesis is also supported by the fact that the SiameseResNet doesn't have any hidden layers, where the SiameseResNetAgeClassifier has 3 hidden layers.
+
+- The performance between the SiameseResNet and the ResNet model are similar, but the first is better, this is probably due to the fact that the SiameseResNet treats each image by it own where the ResNet as only one big image (with 6 channels) as input, getting less significant features.
