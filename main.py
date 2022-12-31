@@ -98,6 +98,9 @@ def main(args):
 
     writer = SummaryWriter('./runs/' + args.run_name)
 
+    # For reproducibility
+    torch.manual_seed(args.seed)
+
     if args.test==True:
         test_model(writer,args)
     else:
@@ -133,6 +136,8 @@ def train_model(writer,args):
 
         solver.train()
 
+        # Overwrite ARGS to use the solver in test model
+        args.test=True
         test_model(writer,args)
     else:
         # Add AutoSolver only if used, it requires additional libraries
