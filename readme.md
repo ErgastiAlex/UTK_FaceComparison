@@ -35,7 +35,17 @@ An example of the training set is shown here:
 
 <img src="img/dataset.png" width=300>
 
-## Dataset
+# Main
+
+Everything is done by the main, except the split of the dataset, it has a lot of parameters, to see all use `main.py -h`
+
+The parameters can be specified inside a config file. Examples of config file can be found inside the directory `Config/`, the config file can be passed to the main using this command `python main.py --config path_of_config`.
+
+The config files doesn't have to specify all the parameters, because it is allowed to use both the config and the arguments like this `python main.py --config path_of_config --run_name Test`
+
+> Note: Keep in mind that if a parameters is passed both inside the config and as argument, the latter overwrites the former
+
+# Dataset
 
 The UTKFace dataset isn’t provided inside the repo, but `split_dataset.py` can be used to split the dataset in 3:
 
