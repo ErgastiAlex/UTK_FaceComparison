@@ -30,9 +30,14 @@ Project assignment #6
 
 # Project solution
 
+The idea is to train a model that classify if the "left" image is the older one (1) or if the "right" image is the younger one (0).
+An example of the training set is shown here:
+
+<img src="img/dataset.png" width=300>
+
 ## Dataset
 
-The UTKFace dataset isn't provided inside the repo, but `split_dataset.py` can be used to split the dataset in 3:
+The UTKFace dataset isn’t provided inside the repo, but `split_dataset.py` can be used to split the dataset in 3:
 
 - Train set
 - Validation set
@@ -59,36 +64,57 @@ The model proposed are trained with:
 - `duplicate_probability` equal to 0, to avoid putting to many duplicates
 - `data_size` equal to 100k, to keep the training time reasonable
 
-This parameters has been chosen to improve the number of combination examples shown to the ResNet
+This parameters has been chosen to improve the number of combination examples shown to the model
 
 ## UTKAgeDataset class
 
-TODO
+This is a simpler custom dataset class that returns all the images inside the directory and their age.
 
 # Solver
-
-TODO: Expand with model classification explanation
 
 ## Basic Solver
 
 This is a basic solver that train the model with the given loss, it has the following input parameters:
 
-- train_loader,
-- test_loader,
-- device,
-- model,
-- writer,
-- args
+- `train_loader`: Loader using during the training,
+- `test_loader`: Loader using during the evaluation, or by the method `test()`,
+- `device`,
+- `model`,
+- `writer`: Tensorboard writer,
+- `args`: other parameters passed by the user used to load the model, load the checkpoint path and other solver parameters.
 
-it is able to recover a training of a model.
+This solver implements early stopping using a parameter called `patience`, if the model hasn’t improved on the validation set for `patience` epochs, it stops the search for a better model. <br/>
+The solver can also resume a training from the last iteration.
 
-It implements a mechanism of early stopping using a parameter called `patience`, if the model hasn't improved on the validation set for `patience` epochs, it stops the search for a better model.
+> Note: To really resume as in the last run, the same seed must be provided
+
+The solver also provide two usable loss, MSELoss and BCELoss. The MSELoss is used for training the Age Regressor, for the images classification the BCELoss has been used.
 
 ## AutoSolver
 
 This solver is able to search for hyperparameters autonomously. To use this solver the package ray[tune] must be installed.
+The solver uses this search space:
+
+```python
+self.config = {
+    "lr": tune.loguniform(1e-4, 1e-1),
+    "batch_size": tune.choice([4,8,16, 32, 64,128]),
+    "hidden_layers": tune.choice([[],[64, 32, 16], [128, 64, 32], [256, 128, 64], [512, 256, 128]]),
+    "use_dropout": tune.choice([True, False]),
+    "dropout_prob": tune.uniform(0.1, 0.7),
+    "weight_decay": tune.loguniform(1e-6, 1e-2),
+    "resnet_type": tune.choice(["resnet18", "resnet50"])
+}
+```
+
 It has the following input parameters:
-training_set, test_set,val_set , model_class, writer, args
+
+- `training_set`
+- `test_set`
+- `val_set`
+- `model_class`
+- `writer`: Tensorboard writer, currently not used
+- `args`: To pass other parameters as args.checkpoint_path and args.run_name
 
 # Model
 
@@ -102,8 +128,8 @@ This model consists of a ResNet that takes as an input a image with 6 channels, 
 
 ## SiameseResNetAge Classifier
 
-This model is very similar to the SiameseResNet, but it uses a pretrained ResNet that classify the age of a given face.
-During the training the model will one train the FC layers and not the ResNet.
+This model is very similar to the SiameseResNet, but it uses a pretrained age regressor ResNet model.
+During the training the model will only train the FC layers and not the ResNet.
 
 # Ablation Experiment
 
@@ -191,9 +217,11 @@ The model with the best loss has this configuration:
 }
 ```
 
-Best trial final validation loss: 0.43838050320178645 \\
-Best trial final validation accuracy: 0.7966 \\
-Best trial test set accuracy: 0.767, AUC_score: 0.8535112 \\
+Best trial final validation loss: 0.43838050320178645
+
+Best trial final validation accuracy: 0.7966
+
+Best trial test set accuracy: 0.767, AUC_score: 0.8535112
 
 The best accuracy and AUC score is achived by a simple resnet without any hidden layers, this proves that a resnet is enough to achieve a good performance on the task. This is probably because a resnet18 is able to extract a meaningful feature vector that can be classified with a simple MLP.
 
@@ -217,7 +245,7 @@ The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
-Looking at the loss, it doesn't improve after some epochs, this is probably caused by a weight decay parameters to high that doesn't allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one.
+Looking at the loss, it doesn’t improve after some epochs, this is probably caused by a weight decay parameters to high that doesn’t allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one.
 
 ### Comparison with and without hidden layers
 
@@ -259,12 +287,24 @@ Best trial config:
 ```
 
 Best trial final validation loss: 0.5426079106481769
+
 Best trial final validation accuracy: 0.7096
+
 Best trial test set accuracy: 0.682, AUC_score: 0.7627742399999999
 
-| Model | Accuracy | AUC |
-| ----- | -------- | --- |
-|       |          |     |
+The model has been retrained from scratch, obtaining this results in 30 epochs
+
+| Dataset    | Accuracy           | AUC        |
+| ---------- | ------------------ | ---------- |
+| Validation | 0.7062895569620253 | 0.79475504 |
+| Test       | 0.6936703821656051 | 0.77224288 |
+
+Overall the model has required more epochs compared to the other model, achieving the worst performance, this is probably caused by the fact that the age regression task is a difficult task, where the simple resnet achived an high MSE error. This error could be the effect of a small dataset, with only ~17k images as training test. In the simple SiameseResNet the model see many combination of image, being able to augment the data for the training of the ResNet and being able to extract only the meaningful feature to classify who is older.
+
+# Tensorboard
+
+In addition to the previous thing there is also a tensorboard board that gives some information about the loss, the accuracy and the AUC, during the training. A preview of the board can be seen here:<br/>
+<img src="img/tensorboard.png"/>
 
 # Conclusion
 
