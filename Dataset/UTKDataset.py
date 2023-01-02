@@ -273,7 +273,7 @@ def main():
     import matplotlib.pyplot as plt
     import os
 
-    dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, unique_images=False,duplicate_probability=0.5)
+    dataset=UTKDataset(root_dir=os.getcwd()+"/UTKFace/train", year_diff=1,data_size=100000, unique_images=False,duplicate_probability=0.5)
     
 
     # Visualize the data
@@ -281,8 +281,8 @@ def main():
     cols, rows = 5, 5
 
     for i in range(1, cols * rows + 1):
-        sample_idx = torch.randint(len(dataloader), size=(1,)).item()
-        images, label= dataloader[sample_idx]
+        sample_idx = torch.randint(len(dataset), size=(1,)).item()
+        images, label= dataset[sample_idx]
         img0=images[0]
         img1=images[1]
 
@@ -297,15 +297,15 @@ def main():
     plt.tight_layout()
     plt.show()
 
-    print(f"Dataloader size={len(dataloader)}")
+    print(f"Dataset size={len(dataset)}")
 
     test_dataloader=UTKDataset(root_dir=os.getcwd()+"/UTKFace/test", year_diff=1,data_size=1000)
 
-    print(f"Test dataloader size={len(test_dataloader)}")
+    print(f"Test dataset size={len(test_dataloader)}")
 
 
-    train_ages=dataloader.get_ages()
-    train_age_diffs=dataloader.get_ages_diff()
+    train_ages=dataset.get_ages()
+    train_age_diffs=dataset.get_ages_diff()
 
     test_ages=test_dataloader.get_ages()
     test_age_diffs=test_dataloader.get_ages_diff()
