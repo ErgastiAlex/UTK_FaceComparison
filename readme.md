@@ -313,6 +313,8 @@ The model has been retrained from scratch, obtaining this results in 30 epochs
 
 Overall the model has required more epochs compared to the other model, achieving the worst performance, this is probably caused by the fact that the age regression task is a difficult task, where the simple resnet achived an high MSE error. This error could be the effect of a small dataset, with only ~17k images as training test. In the simple SiameseResNet the model see many combination of image, being able to augment the data for the training of the ResNet and being able to extract only the meaningful feature to classify who is older.
 
+The loss during the training doesn't decrease a lot, it gets stucked around 0.5, this is probably caused by the fact that only the hidden layers can learn and the ResNet doesn't improve, providing not so meaningful feature map.
+
 # Tensorboard
 
 In addition to the previous thing there is also a tensorboard board that gives some information about the loss, the accuracy and the AUC, during the training. A preview of the board can be seen here:<br/>
