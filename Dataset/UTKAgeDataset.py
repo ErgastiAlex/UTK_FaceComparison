@@ -100,7 +100,7 @@ def main():
     import matplotlib.pyplot as plt
     import os
 
-    dataloader=UTKAgeDataset(root_dir=os.getcwd()+"/UTKFace/train")
+    dataset=UTKAgeDataset(root_dir=os.getcwd()+"/UTKFace/train")
     
 
     # Visualize the data
@@ -108,8 +108,8 @@ def main():
     cols, rows = 5, 5
 
     for i in range(1, cols * rows + 1):
-        sample_idx = torch.randint(len(dataloader), size=(1,)).item()
-        image,age= dataloader[sample_idx]
+        sample_idx = torch.randint(len(dataset), size=(1,)).item()
+        image,age= dataset[sample_idx]
 
 
         figure.add_subplot(rows, cols, i)
@@ -122,15 +122,15 @@ def main():
     plt.tight_layout()
     plt.show()
 
-    print(f"Dataloader size={len(dataloader)}")
+    print(f"Dataset size={len(dataset)}")
 
-    test_dataloader=UTKAgeDataset(root_dir=os.getcwd()+"/UTKFace/test")
+    test_dataset=UTKAgeDataset(root_dir=os.getcwd()+"/UTKFace/test")
 
-    print(f"Test dataloader size={len(test_dataloader)}")
+    print(f"Test dataset size={len(test_dataset)}")
 
-    train_ages=dataloader.get_ages()
+    train_ages=dataset.get_ages()
 
-    test_ages=test_dataloader.get_ages()
+    test_ages=test_dataset.get_ages()
 
     
     plot_hist_comparison(plt, train_ages, test_ages, "age distribution")
