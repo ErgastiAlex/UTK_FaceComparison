@@ -181,40 +181,20 @@ The model is saved as `models\SiameseResNetClassifier_ResNet18\best_model.pth`
 
 ## ResNetClassifier
 
-| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy | AUC          |
-| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | -------- | ------------ |
-| \_\_train_78f21_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | &cross;     | 5.06796e-05  | 10   | 4071.29        | **0.438381** | 0.7966   | 0.883987     |
-| \_\_train_78f21_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | &check;     | 1.34209e-05  | 2    | 1094.55        | 0.510653     | 0.7504   | 0.838142     |
-| \_\_train_78f21_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | &check;     | 7.60351e-06  | 1    | 457.527        | 0.665431     | 0.5982   | 0.642916     |
-| \_\_train_78f21_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | &check;     | 4.10899e-05  | 1    | 552.325        | 0.697621     | 0.5      | 0.494179     |
-| \_\_train_78f21_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | &check;     | 5.92368e-06  | 1    | 420.208        | 0.627728     | 0.6724   | 0.704657     |
-| \_\_train_78f21_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | &check;     | 5.58359e-06  | 10   | 4119.39        | 0.483091     | **0.8**  | **0.897777** |
-| \_\_train_78f21_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | &check;     | 0.00173744   | 1    | 539.234        | 0.601481     | 0.683    | 0.745532     |
-| \_\_train_78f21_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | &check;     | 0.000681391  | 1    | 1196.29        | 0.693234     | 0.5      | 0.499012     |
-| \_\_train_78f21_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | &cross;     | 0.00189003   | 1    | 498.209        | 0.667643     | 0.5944   | 0.629829     |
-| \_\_train_78f21_00009 | 128        | 0.597436     | [512, 256, 128] | 0.0891902   | resnet50    | &check;     | 0.000687784  | 1    | 466.556        | 50.4337      | 0.4998   | 0.50039      |
+| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy  | AUC          |
+| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | --------- | ------------ |
+| \_\_train_6636c_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | False       | 5.06796e-05  | 10   | 3815.44        | **0.404972** | 0.8106    | 0.899647     |
+| \_\_train_6636c_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | True        | 1.34209e-05  | 4    | 2567.28        | 0.420849     | 0.7962    | 0.888065     |
+| \_\_train_6636c_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | True        | 7.60351e-06  | 1    | 486.818        | 0.639258     | 0.6392    | 0.695962     |
+| \_\_train_6636c_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | True        | 4.10899e-05  | 1    | 612.037        | 0.693384     | 0.499     | 0.507367     |
+| \_\_train_6636c_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | True        | 5.92368e-06  | 1    | 423.041        | 0.629951     | 0.6586    | 0.713166     |
+| \_\_train_6636c_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | True        | 5.58359e-06  | 10   | 3559.37        | 0.43683      | **0.815** | **0.908031** |
+| \_\_train_6636c_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | True        | 0.00173744   | 1    | 573.937        | 0.591588     | 0.6918    | 0.753452     |
+| \_\_train_6636c_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | True        | 0.000681391  | 1    | 1250.23        | 0.693999     | 0.5       | 0.499252     |
+| \_\_train_6636c_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | False       | 0.00189003   | 1    | 585.363        | 0.672544     | 0.5724    | 0.621939     |
+| \_\_train_6636c_00009 | 128        | 0.597436     | [512, 256, 128] | 0.0891902   | resnet50    | True        | 0.000687784  | 1    | 519.062        | 50.5274      | 0.5006    | 0.500202     |
 
 A simple resnet18 has a great accuracy and AUC, but an higher loss compared to a resnet18 with some hidden layers.
-
-The model with the best loss has this configuration:
-
-```json
-{
-  "lr": 0.005285108213178958,
-  "batch_size": 64,
-  "hidden_layers": [512, 256, 128],
-  "use_dropout": false,
-  "dropout_prob": 0.20068111676973313,
-  "weight_decay": 5.067959425940853e-5,
-  "resnet_type": "resnet18"
-}
-```
-
-Best trial final validation loss: 0.43838050320178645
-
-Best trial final validation accuracy: 0.7966
-
-Best trial test set accuracy: 0.767, AUC_score: 0.8535112
 
 The best accuracy and AUC score is achived by a simple resnet without any hidden layers, this proves that a resnet is enough to achieve a good performance on the task. This is probably because a resnet18 is able to extract a meaningful feature vector that can be classified with a simple MLP.
 
@@ -222,19 +202,19 @@ The best accuracy and AUC score is achived by a simple resnet without any hidden
 
 The simple ResNet18 model was retrained from scratch and gets this performances:
 
-| Dataset    | Loss                | Accuracy           | AUC                |
-| ---------- | ------------------- | ------------------ | ------------------ |
-| Validation | 0.40788126447398193 | 0.8136942675159236 | 0.8999772800000001 |
-| Test       | 0.4258542314266703  | 0.7925955414012739 | 0.8887508799999999 |
+| Dataset    | Loss | Accuracy | AUC |
+| ---------- | ---- | -------- | --- |
+| Validation |      |          |     |
+| Test       |      |          |     |
 
 The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth`
 
 ### ResNetClassifier with hidden layers
 
-| Dataset    | Loss                | Accuracy           | AUC                |
-| ---------- | ------------------- | ------------------ | ------------------ |
-| Validation | 0.4490210417705246  | 0.7786787974683544 | 0.8814552000000001 |
-| Test       | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
+| Dataset    | Loss | Accuracy | AUC |
+| ---------- | ---- | -------- | --- |
+| Validation |      |          |     |
+| Test       |      |          |     |
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
