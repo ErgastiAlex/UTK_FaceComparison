@@ -123,6 +123,40 @@ def add_model_info_to_tensorboard(writer, args, model):
 
     writer.flush()
 
+def add_image_results_to_tensorboard(writer, model, device, test_dataset, nrows, ncols):
+    """
+    Add images and the results of the model to tensorboard
+    """
+    
+    figure = plt.figure(figsize=(10, 10))
+
+    for i in range(1,nrows*ncols+1):
+        figure.add_subplot(nrows,ncols,i)
+
+        sample_idx = torch.randint(len(test_dataset), size=(1,)).item()
+        images,label= test_dataset[sample_idx]
+
+        img0=denorm(images[0])
+        img1=denorm(images[1])
+
+        images=images.to(device)
+        images=images.unsqueeze(0) # images.unsqueeze(0) -> [1, 2, 3, 224, 224]
+
+        
+        prediction=model(images).cpu().view(-1).to(torch.float32)
+        label=label.view(-1).to(torch.float32)
+
+        plt.title(f"Pred: {prediction.item():.2f} Real: {label.item():.2f}")
+        plt.imshow(transforms.ToPILImage()(torch.cat((img0,img1),dim=2)))
+
+        plt.axis("off")
+    
+    plt.tight_layout()
+
+
+    writer.add_figure("Results", figure)
+    writer.flush()
+
 
 
 def denorm(x):

@@ -169,6 +169,8 @@ def test_model(writer,args):
 
     solver.evaluate(True)
 
+    utility.add_image_results_to_tensorboard(writer, solver.model, device, test_dataset, 5,5)
+
 
 
 
