@@ -156,47 +156,26 @@ All the models have been trained using the following dataset dimension:
 
 ## SiameseResNet
 
-| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss         | accuracy   | AUC         |
-| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ------------ | ---------- | ----------- |
-| \_\_train_d46fc_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | &cross;     | 5.06796e-05  | 10   | 7187.98        | 0.416078     | 0.825      | 0.914002    |
-| \_\_train_d46fc_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | &check;     | 1.34209e-05  | 1    | 868.455        | 0.445902     | 0.786      | 0.87629     |
-| \_\_train_d46fc_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | &check;     | 7.60351e-06  | 1    | 761.974        | 0.680393     | 0.5606     | 0.593323    |
-| \_\_train_d46fc_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | &check;     | 4.10899e-05  | 1    | 865.805        | 0.694148     | 0.4972     | 0.491982    |
-| \_\_train_d46fc_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | &check;     | 5.92368e-06  | 1    | 766.598        | 0.604223     | 0.7224     | 0.775198    |
-| \_\_train_d46fc_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | &check;     | 5.58359e-06  | 4    | 3031.08        | **0.387461** | **0.8294** | **0.91727** |
-| \_\_train_d46fc_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | &check;     | 0.00173744   | 1    | 851.608        | 0.538291     | 0.7292     | 0.805117    |
-| \_\_train_d46fc_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | &check;     | 0.000681391  | 1    | 1547.35        | 0.693506     | 0.5        | 0.487549    |
-| \_\_train_d46fc_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | &cross;     | 0.00189003   | 2    | 1473.61        | 0.536957     | 0.7412     | 0.828701    |
+| Trial name            | batch_size | dropout_prob | hidden_layers   | lr          | resnet_type | use_dropout | weight_decay | iter | total time (s) | loss        | accuracy   | AUC          |
+| --------------------- | ---------- | ------------ | --------------- | ----------- | ----------- | ----------- | ------------ | ---- | -------------- | ----------- | ---------- | ------------ |
+| \_\_train_766d1_00000 | 64         | 0.200681     | [512, 256, 128] | 0.00528511  | resnet18    | &cross;     | 5.06796e-05  | 10   | 3538.22        | **0.36129** | 0.8382     | 0.92661      |
+| \_\_train_766d1_00001 | 32         | 0.419782     | [512, 256, 128] | 0.000180967 | resnet50    | &check;     | 1.34209e-05  | 2    | 1783.62        | 0.379791    | 0.8254     | 0.915661     |
+| \_\_train_766d1_00002 | 64         | 0.205812     | [512, 256, 128] | 0.008269    | resnet50    | &check;     | 7.60351e-06  | 1    | 763.975        | 0.693145    | 0.5028     | 0.513611     |
+| \_\_train_766d1_00003 | 32         | 0.269371     | [512, 256, 128] | 0.0169636   | resnet50    | &check;     | 4.10899e-05  | 1    | 883.861        | 0.69451     | 0.5        | 0.492005     |
+| \_\_train_766d1_00004 | 16         | 0.532978     | [64, 32, 16]    | 0.000643042 | resnet18    | &check;     | 5.92368e-06  | 1    | 542.341        | 0.545377    | 0.7388     | 0.802306     |
+| \_\_train_766d1_00005 | 32         | 0.340338     | []              | 0.00247932  | resnet18    | &check;     | 5.58359e-06  | 8    | 3337.3         | 0.419124    | **0.8468** | **0.933059** |
+| \_\_train_766d1_00006 | 32         | 0.255038     | []              | 0.00310665  | resnet50    | &check;     | 0.00173744   | 1    | 877.559        | 0.536702    | 0.7278     | 0.806702     |
+| \_\_train_766d1_00007 | 4          | 0.264651     | [512, 256, 128] | 0.00170083  | resnet18    | &check;     | 0.000681391  | 1    | 1632.84        | 0.695752    | 0.5        | 0.503657     |
+| \_\_train_766d1_00008 | 64         | 0.433996     | [64, 32, 16]    | 0.000605203 | resnet50    | &cross;     | 0.00189003   | 2    | 1524.46        | 0.454667    | 0.778      | 0.86682      |
 
-The best model is a simple resnet18.
-Best trial config:
+The model with the lowest loss is a ResNet18 with [512,256,128] as hidden layers, but the model with the highest accuracy and AUC is a simple ResNet18, so, regardeless the loss value, this is the best model overall.
 
-```json
-{
-  "lr": 0.002479324241152825,
-  "batch_size": 32,
-  "hidden_layers": [],
-  "use_dropout": true,
-  "dropout_prob": 0.3403376632221325,
-  "weight_decay": 5.58358886230025e-6,
-  "resnet_type": "resnet18"
-}
-```
+The ResNet18 without any hidden layers has been retrained from scratch, using the parameters suggested by Ray[tune] obtaining this result:
 
-Best trial final validation loss: 0.38746090527552707
-
-Best trial final validation accuracy: 0.8294
-
-Best trial test set accuracy: 0.8234, AUC_score: 0.9140750400000001
-
-The accuracy is calculated using a threshold of 0.5
-
-The model was retrained from scratch and gets this performances:
-
-| Dataset    | Loss                | Accuracy           | AUC        |
-| ---------- | ------------------- | ------------------ | ---------- |
-| Validation | 0.3589838809648137  | 0.8411624203821656 | 0.92645456 |
-| Test       | 0.36990593430722596 | 0.8234474522292994 | 0.92036864 |
+| Dataset    | Loss | Accuracy | AUC  |
+| ---------- | ---- | -------- | ---- |
+| Validation | X    | X        | TODO |
+| Test       | X    | X        | TODO |
 
 The model is saved as `models\SiameseResNetClassifier_ResNet18\best_model.pth`
 
