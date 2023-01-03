@@ -143,6 +143,8 @@ During the training the model will only train the FC layers and not the ResNet.
 
 # Hyperparameters Search and model comparison
 
+## THIS MUST BE UPDATED WITH NEW DATA WITH NEW SPLIT_DATASET.PY, TO GET THE REAL RESULTS, WAIT 2/3 DAYS
+
 This experiment has been produced by the AutoSolver using Ray Tune.
 All the models have been trained using the following dataset dimension:
 
