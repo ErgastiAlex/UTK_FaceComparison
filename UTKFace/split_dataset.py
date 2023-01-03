@@ -8,6 +8,8 @@ import os
 def get_args():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--seed', type=int, default=42, help='random seed')
+
     parser.add_argument('--dataset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/dataset', help='path to the dataset')
     parser.add_argument('--trainset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/train', help='path to the trainset')
     parser.add_argument('--valset_path', type=str, default='D:/Alex/Universita/Parma - Scienze Informatiche/2INF/Deep Learning and Generative Models/Progetto/UTKFace/val', help='path to the validation set')
@@ -25,12 +27,15 @@ def main():
     print(args)
     assert args.train_size + args.val_size + args.test_size == 100, "The sum of the train, val and test size must be 1"
 
+    np.random.seed(args.seed)
+
     train_images=np.empty(0)
     val_images=np.empty(0)
     test_images=np.empty(0)
 
     images_path=os.path.join(args.dataset_path, '*.jpg')
     images=np.array(glob.glob(images_path))
+    np.random.shuffle(images)
 
     ages=np.vectorize(lambda x: re.search("(\d+)_\d_\d_\d+\.jpg.*",x))(images)
     images_data=np.c_[images,ages]
@@ -47,6 +52,8 @@ def main():
 
         train_count=int(count*args.train_size/100)
         val_count=int(count*args.val_size/100)
+
+        
 
 
         train_images=np.append(train_images, images_data[images_data[:,1]==age][:train_count,0])
