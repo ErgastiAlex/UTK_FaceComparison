@@ -172,10 +172,14 @@ The model with the lowest loss is a ResNet18 with [512,256,128] as hidden layers
 
 The ResNet18 without any hidden layers has been retrained from scratch, using the parameters suggested by Ray[tune] obtaining this result:
 
-| Dataset    | Loss | Accuracy | AUC  |
-| ---------- | ---- | -------- | ---- |
-| Validation | X    | X        | TODO |
-| Test       | X    | X        | TODO |
+| Dataset    | Loss                | Accuracy           | AUC        |
+| ---------- | ------------------- | ------------------ | ---------- |
+| Validation | 0.33637078761295147 | 0.8409633757961783 | 0.93242656 |
+| Test       | 0.315411420859349   | 0.8564888535031847 | 0.9403736  |
+
+> The Test performances are, oddly, slightly higher, this is easly explainable by the fact that the dataset contains people of different ethnicity and gender.
+> The `split_dataset.py` splits keeping the age distribution equal between train, val and test set, but the other parameters are ignored, so an "unlucky" split could have created a test set more similar to the training set than the validation set.
+> In my opinion this is not a problem, because, the performances are so good that a slightly decrease in a new enviroment, due to different ethnicity and gender distributions, would not be so impactufl.
 
 The model is saved as `models\SiameseResNetClassifier_ResNet18\best_model.pth`
 
