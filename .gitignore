@@ -4,3 +4,5 @@ UTKFace/test
 UTKFace/val
 
 *.pyc
+*.bash
+*.zip
