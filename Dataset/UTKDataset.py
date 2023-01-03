@@ -184,11 +184,15 @@ class UTKDataset(Dataset):
 
         images1=self.images_data[images1_index,0]
         images2=self.images_data[images2_index,0]
+
+        # Here this vector is all 0s because the images1 is always younger than images2s
         left_is_older=(ages[images1_index]>ages[images2_index]).astype(int) # 1 if images1 is older than images2, 0 otherwise
 
         images1_age=ages[images1_index]
         images2_age=ages[images2_index]
 
+
+        #Switch half of the images order in the dataset to make half of the images1 older than images2 and half of the images1 younger than images2
         self.__switch_images(images1,images2,left_is_older,images1_age,images2_age)
         self.age_diff=abs(ages[images1_index]-ages[images2_index])
 
