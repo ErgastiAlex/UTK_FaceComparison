@@ -232,10 +232,10 @@ The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth
 
 ### ResNetClassifier with hidden layers
 
-| Dataset    | Loss | Accuracy | AUC |
-| ---------- | ---- | -------- | --- |
-| Validation | X    | X        | X   |
-| Test       | X    | X        | X   |
+| Dataset    | Loss                | Accuracy           | AUC                |
+| ---------- | ------------------- | ------------------ | ------------------ |
+| Validation | 0.3903012917011599  | 0.8158623417721519 | 0.9060519999999999 |
+| Test       | 0.38896194741695744 | 0.8170490506329114 | 0.90803216         |
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
@@ -254,7 +254,7 @@ Looking at the loss, it doesn’t improve after some epochs, this is caused by a
 | Model                 | Loss                | Accuracy           | AUC                |
 | --------------------- | ------------------- | ------------------ | ------------------ |
 | Without hidden_layers | 0.35899201177867357 | 0.8294187898089171 | 0.9201459200000001 |
-| With hidden_layers    | X                   | X                  | X                  |
+| With hidden_layers    | 0.38896194741695744 | 0.8170490506329114 | 0.90803216         |
 
 Overall the performance are similar, but the ResNet18 without any hidden layers is better, in both performances and parameters numbers.
 
