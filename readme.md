@@ -179,7 +179,13 @@ The ResNet18 without any hidden layers has been retrained from scratch, using th
 
 > The Test performances are, oddly, slightly higher, this is easly explainable by the fact that the dataset contains people of different ethnicity and gender.
 > The `split_dataset.py` splits keeping the age distribution equal between train, val and test set, but the other parameters are ignored, so an "unlucky" split could have created a test set more similar to the training set than the validation set.
-> In my opinion this is not a problem, because, the performances are so good that a slightly decrease in a new enviroment, due to different ethnicity and gender distributions, would not be so impactufl.
+> In my opinion this is not a problem, because, the performances are so good that a slightly decrease in a new enviroment, due to different ethnicity and gender distributions, would not be so impactufl. <br/>
+> Indeed in [492726adb0fa072b98819df9b59ae756a41f8cd2](https://github.com/ErgastiAlex/UTK_FaceComparison/tree/492726adb0fa072b98819df9b59ae756a41f8cd2), where the dataset was splitted without the random shuffle the performances were
+>
+> | Dataset    | Loss                | Accuracy           | AUC        |
+> | ---------- | ------------------- | ------------------ | ---------- |
+> | Validation | 0.3589838809648137  | 0.8411624203821656 | 0.92645456 |
+> | Test       | 0.36990593430722596 | 0.8234474522292994 | 0.92036864 |
 
 The model is saved as `models\SiameseResNetClassifier_ResNet18\best_model.pth`
 
