@@ -186,6 +186,8 @@ The ResNet18 without any hidden layers has been retrained from scratch, using th
 > | ---------- | ------------------- | ------------------ | ---------- |
 > | Validation | 0.3589838809648137  | 0.8411624203821656 | 0.92645456 |
 > | Test       | 0.36990593430722596 | 0.8234474522292994 | 0.92036864 |
+>
+> The random shuffle of the dataset allows the training phase to have more diverse images, in terms of ethnicity and gender, allowing the net to learn slightly better.
 
 The model is saved as `models\SiameseResNetClassifier_ResNet18\best_model.pth`
 
@@ -225,13 +227,15 @@ The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth
 > | ---------- | ------------------- | ------------------ | ------------------ |
 > | Validation | 0.40788126447398193 | 0.8136942675159236 | 0.8999772800000001 |
 > | Test       | 0.4258542314266703  | 0.7925955414012739 | 0.8887508799999999 |
+>
+> The random shuffle of the dataset allows the training phase to have more diverse images, in terms of ethnicity and gender, allowing the net to learn better.
 
 ### ResNetClassifier with hidden layers
 
-| Dataset    | Loss               | Accuracy           | AUC                |
-| ---------- | ------------------ | ------------------ | ------------------ |
-| Validation | 0.3775512274307541 | 0.8180379746835443 | 0.9170142400000001 |
-| Test       | 0.369737640966343  | 0.8229825949367089 | 0.91975248         |
+| Dataset    | Loss | Accuracy | AUC |
+| ---------- | ---- | -------- | --- |
+| Validation | X    | X        | X   |
+| Test       | X    | X        | X   |
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
@@ -250,7 +254,7 @@ Looking at the loss, it doesn’t improve after some epochs, this is caused by a
 | Model                 | Loss                | Accuracy           | AUC                |
 | --------------------- | ------------------- | ------------------ | ------------------ |
 | Without hidden_layers | 0.35899201177867357 | 0.8294187898089171 | 0.9201459200000001 |
-| With hidden_layers    | 0.369737640966343   | 0.8229825949367089 | 0.91975248         |
+| With hidden_layers    | X                   | X                  | X                  |
 
 Overall the performance are similar, but the ResNet18 without any hidden layers is better, in both performances and parameters numbers.
 
