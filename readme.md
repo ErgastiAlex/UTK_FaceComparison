@@ -284,10 +284,10 @@ Overall the performance are similar, but the ResNet18 without any hidden layers 
 
 The best model in terms of loss and AUC (first row) has been retrained from scratch
 
-| Dataset    | Accuracy | AUC |
-| ---------- | -------- | --- |
-| Validation | X        | X   |
-| Test       | X        | X   |
+| Dataset    | Loss               | Accuracy           | AUC                |
+| ---------- | ------------------ | ------------------ | ------------------ |
+| Validation | 0.5423958226095272 | 0.7045094936708861 | 0.7944922400000001 |
+| Test       | 0.5540791723547103 | 0.696993670886076  | 0.78991944         |
 
 The model is saved as `models\SiameseResNetAgeClassifier\best_model.pth`
 
