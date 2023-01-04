@@ -143,8 +143,6 @@ During the training the model will only train the FC layers and not the ResNet.
 
 # Hyperparameters Search and model comparison
 
-## THIS MUST BE UPDATED WITH NEW DATA WITH NEW SPLIT_DATASET.PY, TO GET THE REAL RESULTS, WAIT 2/3 DAYS
-
 This experiment has been produced by the AutoSolver using Ray Tune.
 All the models have been trained using the following dataset dimension:
 
@@ -246,7 +244,6 @@ The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 > | Validation | 0.4490210417705246  | 0.7786787974683544 | 0.8814552000000001 |
 > | Test       | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
 
-TODO HERE
 Looking at the loss, it doesn’t improve after some epochs, this is caused by a weight decay parameters to high that doesn’t allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one. Indeed the same model trained with smaller weight decay achives a smaller loss.
 
 ### Comparison with and without hidden layers
