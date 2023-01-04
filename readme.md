@@ -212,33 +212,56 @@ The best accuracy and AUC score is achived by a simple resnet without any hidden
 
 The simple ResNet18 model was retrained from scratch and gets this performances:
 
-| Dataset    | Loss | Accuracy | AUC |
-| ---------- | ---- | -------- | --- |
-| Validation |      |          |     |
-| Test       |      |          |     |
+| Dataset    | Loss                | Accuracy           | AUC                |
+| ---------- | ------------------- | ------------------ | ------------------ |
+| Validation | 0.3598981330728835  | 0.8278264331210191 | 0.9198367999999999 |
+| Test       | 0.35899201177867357 | 0.8294187898089171 | 0.9201459200000001 |
 
 The model is saved as `models\ResNetClassifier_ResNet18_no_hidden\best_model.pth`
 
+> Comparison in [492726adb0fa072b98819df9b59ae756a41f8cd2](https://github.com/ErgastiAlex/UTK_FaceComparison/tree/492726adb0fa072b98819df9b59ae756a41f8cd2) without dataset random shuffle
+>
+> | Dataset    | Loss                | Accuracy           | AUC                |
+> | ---------- | ------------------- | ------------------ | ------------------ |
+> | Validation | 0.40788126447398193 | 0.8136942675159236 | 0.8999772800000001 |
+> | Test       | 0.4258542314266703  | 0.7925955414012739 | 0.8887508799999999 |
+
 ### ResNetClassifier with hidden layers
 
-| Dataset    | Loss | Accuracy | AUC |
-| ---------- | ---- | -------- | --- |
-| Validation |      |          |     |
-| Test       |      |          |     |
+| Dataset    | Loss               | Accuracy           | AUC                |
+| ---------- | ------------------ | ------------------ | ------------------ |
+| Validation | 0.3775512274307541 | 0.8180379746835443 | 0.9170142400000001 |
+| Test       | 0.369737640966343  | 0.8229825949367089 | 0.91975248         |
 
 The model is saved as `models\ResNetClassifier_ResNet18_hidden\best_model.pth`
 
+> Comparison in [492726adb0fa072b98819df9b59ae756a41f8cd2](https://github.com/ErgastiAlex/UTK_FaceComparison/tree/492726adb0fa072b98819df9b59ae756a41f8cd2) without dataset random shuffle
+>
+> | Dataset    | Loss                | Accuracy           | AUC                |
+> | ---------- | ------------------- | ------------------ | ------------------ |
+> | Validation | 0.4490210417705246  | 0.7786787974683544 | 0.8814552000000001 |
+> | Test       | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
+
+TODO HERE
 Looking at the loss, it doesn’t improve after some epochs, this is caused by a weight decay parameters to high that doesn’t allow the model to learn well. Hence, the weight decay proposed by the autotune could not be the optimal one. Indeed the same model trained with smaller weight decay achives a smaller loss.
 
 ### Comparison with and without hidden layers
 
-| Model                 | Loss                   | Accuracy               | AUC                    |
-| --------------------- | ---------------------- | ---------------------- | ---------------------- |
-| Without hidden_layers | **0.4258542314266703** | **0.7925955414012739** | **0.8887508799999999** |
-| With hidden_layers    | 0.42765730439098015    | 0.7886146496815286     | 0.88240848             |
+| Model                 | Loss                | Accuracy           | AUC                |
+| --------------------- | ------------------- | ------------------ | ------------------ |
+| Without hidden_layers | 0.35899201177867357 | 0.8294187898089171 | 0.9201459200000001 |
+| With hidden_layers    | 0.369737640966343   | 0.8229825949367089 | 0.91975248         |
 
-Overall the performance are similar.
-Comparing the model I think that the better one is the resnet18 without any hidden layers, in this way it is possible to obtain good performance without increasing the number of parameters.
+Overall the performance are similar, but the ResNet18 without any hidden layers is better, in both performances and parameters numbers.
+
+> Comparison in [492726adb0fa072b98819df9b59ae756a41f8cd2](https://github.com/ErgastiAlex/UTK_FaceComparison/tree/492726adb0fa072b98819df9b59ae756a41f8cd2) without dataset random shuffle
+
+> | Model                 | Loss                | Accuracy           | AUC                |
+> | --------------------- | ------------------- | ------------------ | ------------------ |
+> | Without hidden_layers | 0.4258542314266703  | 0.7925955414012739 | 0.8887508799999999 |
+> | With hidden_layers    | 0.42765730439098015 | 0.7886146496815286 | 0.88240848         |
+>
+> The random shuffle of the dataset allows the training phase to have more diverse images, in terms of ethnicity and gender, allowing the net to learn better.
 
 ## ResNetAgeClassifier
 
